@@ -49,6 +49,13 @@ export const Messages: CollectionConfig = {
       ],
     },
     {
+      name: "mentions",
+      type: "relationship",
+      relationTo: "users",
+      hasMany: true,
+      index: true,
+    },
+    {
       name: "createdAt",
       type: "date",
       defaultValue: () => new Date(),

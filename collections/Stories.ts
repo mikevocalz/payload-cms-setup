@@ -25,6 +25,26 @@ export const Stories: CollectionConfig = {
       maxLength: 500,
     },
     {
+      name: "location",
+      type: "text",
+      maxLength: 200,
+    },
+    {
+      name: "stickers",
+      type: "array",
+      fields: [
+        {
+          name: "type",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "data",
+          type: "json",
+        },
+      ],
+    },
+    {
       name: "visibility",
       type: "select",
       options: [
