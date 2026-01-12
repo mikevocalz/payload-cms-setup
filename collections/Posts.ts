@@ -78,6 +78,11 @@ export const Posts: CollectionConfig = {
       maxLength: 5000,
     },
     {
+      name: "location",
+      type: "text",
+      maxLength: 200,
+    },
+    {
       name: "media",
       type: "array",
       maxRows: 4,

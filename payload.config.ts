@@ -54,6 +54,8 @@ import { FeatureFlags } from "./collections/FeatureFlags"
 
 // Analytics
 import { Events } from "./collections/Events"
+import { EventRsvps } from "./collections/EventRsvps"
+import { StoryViews } from "./collections/StoryViews"
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -105,6 +107,8 @@ const config = buildConfig({
     FeatureFlags,
     // Analytics
     Events,
+    EventRsvps,
+    StoryViews,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
