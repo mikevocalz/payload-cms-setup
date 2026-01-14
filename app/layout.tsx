@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Counter Culture',
+  description: 'A modern social network built with Payload CMS',
   generator: 'v0.app',
   icons: {
     icon: [

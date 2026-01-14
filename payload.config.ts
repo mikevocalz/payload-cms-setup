@@ -9,6 +9,7 @@ import { payloadRealTime } from "@alejotoro-o/payload-real-time"
 // Core Identity & Access
 import { Users } from "./collections/Users"
 import { Profiles } from "./collections/Profiles"
+import { Accounts } from "./collections/Accounts"
 
 // Social Graph
 import { Follows } from "./collections/Follows"
@@ -21,6 +22,7 @@ import { Media } from "./collections/Media"
 import { Comments } from "./collections/Comments"
 import { Reactions } from "./collections/Reactions"
 import { Hashtags } from "./collections/Hashtags"
+import { Likes } from "./collections/Likes"
 
 // Tagging & Saves
 import { Bookmarks } from "./collections/Bookmarks"
@@ -44,9 +46,6 @@ import { SubscriptionTiers } from "./collections/SubscriptionTiers"
 import { Subscriptions } from "./collections/Subscriptions"
 import { Transactions } from "./collections/Transactions"
 
-// AI & Automation
-import { AIProfiles } from "./collections/AIProfiles"
-import { AIInteractions } from "./collections/AIInteractions"
 
 // App Config
 import { Settings } from "./collections/Settings"
@@ -72,6 +71,7 @@ const config = buildConfig({
     // Core Identity & Access
     Users,
     Profiles,
+    Accounts,
     // Social Graph
     Follows,
     Blocks,
@@ -82,6 +82,7 @@ const config = buildConfig({
     Comments,
     Reactions,
     Hashtags,
+    Likes,
     // Tagging & Saves
     Bookmarks,
     UserTags,
@@ -99,9 +100,6 @@ const config = buildConfig({
     SubscriptionTiers,
     Subscriptions,
     Transactions,
-    // AI & Automation
-    AIProfiles,
-    AIInteractions,
     // App Config
     Settings,
     FeatureFlags,

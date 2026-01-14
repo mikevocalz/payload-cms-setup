@@ -30,6 +30,7 @@ export default function SignupPage() {
         email,
         password,
         name: displayName,
+        username,
       })
 
       if (result.error) {
@@ -86,7 +87,7 @@ export default function SignupPage() {
             <form onSubmit={handleSignup}>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="displayName">Name</Label>
+                  <Label htmlFor="displayName">Display Name</Label>
                   <Input
                     id="displayName"
                     type="text"
@@ -94,6 +95,17 @@ export default function SignupPage() {
                     required
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="johndoe"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </div>
                 <div className="grid gap-2">

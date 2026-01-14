@@ -31,11 +31,7 @@ export const StoryViews: CollectionConfig = {
   ],
   indexes: [
     {
-      name: "story_user_unique",
-      fields: {
-        story: 1,
-        user: 1,
-      },
+      fields: ["story", "user"],
       unique: true,
     },
   ],

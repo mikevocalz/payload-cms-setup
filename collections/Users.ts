@@ -27,6 +27,44 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: "firstName",
+      type: "text",
+      maxLength: 50,
+    },
+    {
+      name: "lastName",
+      type: "text",
+      maxLength: 50,
+    },
+    {
+      name: "userType",
+      type: "select",
+      options: [
+        { label: "Organizer", value: "Organizer" },
+        { label: "Regular", value: "Regular" },
+      ],
+      defaultValue: "Regular",
+      required: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
+    {
+      name: "role",
+      type: "select",
+      options: [
+        { label: "Super-Admin", value: "Super-Admin" },
+        { label: "Admin", value: "Admin" },
+        { label: "Moderator", value: "Moderator" },
+        { label: "Basic", value: "Basic" },
+      ],
+      defaultValue: "Basic",
+      required: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
+    {
       name: "email",
       type: "email",
       required: true,

@@ -33,11 +33,7 @@ export const Bookmarks: CollectionConfig = {
   ],
   indexes: [
     {
-      name: "user_post_unique",
-      fields: {
-        user: 1,
-        post: 1,
-      },
+      fields: ["user", "post"],
       unique: true,
     },
   ],

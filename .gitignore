@@ -16,8 +16,26 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
+# env files & credentials
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# secrets & credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets
+credentials.json
+service-account*.json
+*-credentials.json
+*.secret
+.htpasswd
 
 # vercel
 .vercel

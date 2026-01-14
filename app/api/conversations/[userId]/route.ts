@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getPayload } from "@/lib/payload"
 
-export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
+    const { userId } = await params
     const payload = await getPayload()
 
     // Get all messages for the user
@@ -12,12 +13,12 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
         or: [
           {
             sender: {
-              equals: params.userId,
+              equals: userId,
             },
           },
           {
             recipient: {
-              equals: params.userId,
+              equals: userId,
             },
           },
         ],
@@ -37,12 +38,12 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
           conversationId: convId,
           lastMessage: message,
           unreadCount: 0,
-          participant: message.sender === params.userId ? message.recipient : message.sender,
+          participant: message.sender === userId ? message.recipient : message.sender,
         })
       }
 
       // Count unread messages
-      if (!message.read && message.recipient === params.userId) {
+      if (!message.read && message.recipient === userId) {
         const conv = conversationsMap.get(convId)
         conv.unreadCount++
       }

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       limit: 1000,
     })
 
-    const followingIds = follows.docs.map((f) => f.following)
+    const followingIds = follows.docs.map((f: { following: string | number }) => f.following)
 
     // Get posts from followed users and own posts
     const posts = await payload.find({

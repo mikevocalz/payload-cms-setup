@@ -103,11 +103,7 @@ export const Follows: CollectionConfig = {
   ],
   indexes: [
     {
-      name: "follower_following_unique",
-      fields: {
-        follower: 1,
-        following: 1,
-      },
+      fields: ["follower", "following"],
       unique: true,
     },
   ],

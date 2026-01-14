@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getPayload } from "@/lib/payload"
 
-export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
+    const { userId } = await params
     const payload = await getPayload()
     const searchParams = request.nextUrl.searchParams
     const page = Number.parseInt(searchParams.get("page") || "1")
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
 
     const whereCondition: any = {
       recipient: {
-        equals: params.userId,
+        equals: userId,
       },
     }
 
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
     const payload = await getPayload()
     const body = await request.json()

@@ -4,13 +4,10 @@ import { Pool } from "pg"
 
 export const auth = betterAuth({
   database: new Pool({
-    host: "db.llmqdmljkxvgtgrluypn.supabase.co",
-    port: 5432,
-    database: "postgres",
-    user: "postgres",
-    password: "Jabari516253Beekman",
+    connectionString: process.env.DATABASE_URI,
   }),
   emailAndPassword: {
+    username: true,
     enabled: true,
     requireEmailVerification: false,
   },
