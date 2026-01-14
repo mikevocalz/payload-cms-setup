@@ -1,5 +1,11 @@
 import { withPayload } from "@payloadcms/next/withPayload"
 import type { NextConfig } from "next"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
+const dirname = path.dirname(fileURLToPath(import.meta.url))
+const pinoElasticsearchStubPath = path.join(dirname, "lib", "pino-elasticsearch-stub.cjs")
+const tapStubPath = path.join(dirname, "lib", "tap-stub.cjs")
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -19,8 +25,8 @@ const nextConfig: NextConfig = {
   // Turbopack config to handle problematic modules
   turbopack: {
     resolveAlias: {
-      "pino-elasticsearch": "./lib/empty-module.js",
-      "tap": "./lib/empty-module.js",
+      "pino-elasticsearch": pinoElasticsearchStubPath,
+      "tap": tapStubPath,
     },
   },
   // Externalize problematic server-only modules
