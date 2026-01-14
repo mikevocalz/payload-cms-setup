@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  webpack: (config) => {
+    config.resolve = config.resolve || {}
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "pino-elasticsearch": false,
+    }
+    return config
+  },
   images: {
     remotePatterns:
       supabaseHostname && supabaseProtocol
