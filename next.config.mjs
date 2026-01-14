@@ -20,7 +20,7 @@ const nextConfig = {
   },
   turbopack: {
     resolveAlias: {
-      "pino-elasticsearch": false,
+      "pino-elasticsearch": "./lib/pino-elasticsearch-stub.js",
     },
   },
   images: {
