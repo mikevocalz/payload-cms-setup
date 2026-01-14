@@ -1,16 +1,39 @@
 import type { NextConfig } from "next"
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+let supabaseHostname: string | undefined
+let supabaseProtocol: "http" | "https" | undefined
+
+if (supabaseUrl) {
+  try {
+    const parsedUrl = new URL(supabaseUrl)
+    supabaseHostname = parsedUrl.hostname
+    supabaseProtocol = parsedUrl.protocol.replace(":", "") as "http" | "https"
+  } catch {
+    supabaseHostname = undefined
+    supabaseProtocol = undefined
+  }
+}
+
 const nextConfig: NextConfig = {
-    typescript: {
+  typescript: {
     ignoreBuildErrors: true,
   },
+  turbopack: {
+    resolveAlias: {
+      "pino-elasticsearch": false,
+    },
+  },
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "") || "",
-      },
-    ],
+    remotePatterns:
+      supabaseHostname && supabaseProtocol
+        ? [
+            {
+              protocol: supabaseProtocol,
+              hostname: supabaseHostname,
+            },
+          ]
+        : [],
     unoptimized: true,
   },
 }
