@@ -8,6 +8,7 @@ const pinoElasticsearchStubPath = path.join(
   "lib",
   "pino-elasticsearch-stub.cjs"
 )
+const tapStubPath = path.join(__dirname, "lib", "tap-stub.cjs")
 let supabaseHostname
 let supabaseProtocol
 
@@ -30,6 +31,7 @@ const nextConfig = {
   turbopack: {
     resolveAlias: {
       "pino-elasticsearch": pinoElasticsearchStubPath,
+      tap: tapStubPath,
     },
   },
   images: {
