@@ -23,6 +23,13 @@ const nextConfig: NextConfig = {
     resolveAlias: {
       "pino-elasticsearch": false,
     },
+  webpack: (config) => {
+    config.resolve = config.resolve || {}
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "pino-elasticsearch": false,
+    }
+    return config
   },
   images: {
     remotePatterns:
