@@ -20,13 +20,6 @@ export const Users: CollectionConfig = {
       },
     },
     {
-      name: "displayName",
-      type: "text",
-      admin: {
-        position: "sidebar",
-      },
-    },
-    {
       name: "firstName",
       type: "text",
       maxLength: 50,
@@ -86,28 +79,20 @@ export const Users: CollectionConfig = {
     },
     {
       name: "pronouns",
-      type: "text",
-      maxLength: 50,
+      type:"select",
+      options:[
+        { label: "He/Him", value: "He/Him" },
+        { label: "She/Her", value: "She/Her" },
+        { label: "They/Them", value: "They/Them" },
+        { label: "He/They", value: "He/They" },
+        { label: "She/They", value: "She/They" },
+        { label: "Other", value: "Other" },
+      ]
     },
     {
       name: "location",
       type: "text",
       maxLength: 100,
-    },
-    {
-      name: "roles",
-      type: "select",
-      options: [
-        { label: "User", value: "user" },
-        { label: "Creator", value: "creator" },
-        { label: "Moderator", value: "moderator" },
-        { label: "Admin", value: "admin" },
-      ],
-      defaultValue: "user",
-      required: true,
-      admin: {
-        position: "sidebar",
-      },
     },
     {
       name: "verified",

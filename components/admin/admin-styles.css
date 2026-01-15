@@ -1,0 +1,676 @@
+/* Custom Payload Admin Styling - Modern & Clean Design */
+
+/* CSS Variables for theming */
+:root {
+  --theme-elevation-0: #0f0f14;
+  --theme-elevation-50: #16161d;
+  --theme-elevation-100: #1c1c26;
+  --theme-elevation-150: #22222e;
+  --theme-elevation-200: #282836;
+  --theme-elevation-250: #2e2e3e;
+  --theme-elevation-300: #343446;
+  --theme-elevation-350: #3a3a4e;
+  --theme-elevation-400: #404056;
+  --theme-elevation-450: #46465e;
+  --theme-elevation-500: #5c5c7a;
+  --theme-elevation-550: #72729a;
+  --theme-elevation-600: #8888aa;
+  --theme-elevation-650: #9e9eba;
+  --theme-elevation-700: #b4b4ca;
+  --theme-elevation-750: #cacada;
+  --theme-elevation-800: #e0e0ea;
+  --theme-elevation-850: #ebebf2;
+  --theme-elevation-900: #f5f5f9;
+  --theme-elevation-950: #fafafc;
+  --theme-elevation-1000: #ffffff;
+
+  --theme-success-500: #66dc99;
+  --theme-error-500: #ee99a1;
+
+  /* Brand colors - Modern violet/purple theme */
+  --color-brand-primary: #8b5cf6;
+  --color-brand-primary-hover: #a78bfa;
+  --color-brand-secondary: #c084fc;
+}
+
+/* Base dark theme overrides */
+html[data-theme="dark"] {
+  --theme-bg: #0f0f14 !important;
+  --theme-elevation-0: #0f0f14 !important;
+  --theme-elevation-50: #16161d !important;
+  --theme-elevation-100: #1c1c26 !important;
+  --theme-elevation-150: #22222e !important;
+  --theme-elevation-200: #282836 !important;
+  --theme-text: #ffffff !important;
+}
+
+/* Template / Minimal views (login, create-first-user, etc.) */
+.template-minimal,
+.template-minimal__wrap {
+  background: linear-gradient(135deg, #0f0f14 0%, #1a1a2e 50%, #16213e 100%) !important;
+  min-height: 100vh;
+}
+
+.template-minimal__branding-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.template-minimal__branding {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none !important;
+}
+
+.template-minimal__branding .graphic-icon {
+  width: 48px !important;
+  height: 48px !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.template-minimal__branding .graphic-icon svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+/* Form card styling */
+.template-minimal .template-minimal__wrap,
+.template-minimal__wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.template-minimal form,
+.login form,
+.create-first-user form {
+  background: rgba(22, 22, 29, 0.8) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border-radius: 20px !important;
+  padding: 2.5rem !important;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  max-width: 420px;
+  width: 100%;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Form headers */
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-header h1 {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.form-header p {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 0.95rem;
+}
+
+/* Form fields */
+.field-type {
+  margin-bottom: 1.25rem !important;
+}
+
+.field-type label {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+  display: block;
+  letter-spacing: 0.01em;
+}
+
+.field-type .field-description {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 0.8rem;
+  margin-top: 0.375rem;
+}
+
+/* Input styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  background: rgba(28, 28, 38, 0.8) !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border-radius: 10px !important;
+  padding: 0.875rem 1rem !important;
+  color: #ffffff !important;
+  font-size: 0.95rem !important;
+  transition: all 0.2s ease !important;
+  width: 100%;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="url"]::placeholder,
+input[type="search"]::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+input[type="url"]:hover,
+input[type="search"]:hover,
+textarea:hover,
+select:hover {
+  border-color: rgba(139, 92, 246, 0.4) !important;
+  background: rgba(34, 34, 46, 0.9) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+  background: rgba(34, 34, 46, 1) !important;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  padding: 0.875rem 1.5rem !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+  text-transform: none !important;
+  letter-spacing: 0.01em;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--style-primary,
+button[type="submit"] {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+  border: none !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35) !important;
+}
+
+.btn--style-primary:hover:not(:disabled),
+button[type="submit"]:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9d6ff8 0%, #b86cf9 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45) !important;
+}
+
+.btn--style-primary:active:not(:disabled),
+button[type="submit"]:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn--style-secondary {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  color: #a78bfa !important;
+}
+
+.btn--style-secondary:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.2) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+}
+
+/* Form submit area */
+.form-submit {
+  margin-top: 1.5rem !important;
+}
+
+.form-submit .btn {
+  width: 100% !important;
+  justify-content: center;
+}
+
+/* Links */
+a {
+  color: #a78bfa !important;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #c4b5fd !important;
+}
+
+/* Checkbox styling */
+.checkbox-input .custom-checkbox {
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 6px !important;
+  background: rgba(28, 28, 38, 0.8) !important;
+  transition: all 0.2s ease !important;
+}
+
+.checkbox-input .custom-checkbox.checked {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+  border-color: transparent !important;
+}
+
+.checkbox-input label {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.9rem !important;
+}
+
+/* Error messages */
+.field-error,
+.form-field__error {
+  color: #f87171 !important;
+  font-size: 0.8rem !important;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Success messages */
+.success-message {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  border-radius: 10px;
+  padding: 1rem;
+  color: #4ade80 !important;
+}
+
+/* Loading state */
+.loading-overlay {
+  background: rgba(15, 15, 20, 0.8) !important;
+  backdrop-filter: blur(4px);
+}
+
+.loading-overlay .loading-spinner,
+.spinner {
+  border-color: rgba(139, 92, 246, 0.2) !important;
+  border-top-color: #8b5cf6 !important;
+}
+
+/* Toast notifications */
+.toast-container .toast {
+  background: rgba(22, 22, 29, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Dashboard styling */
+.dashboard {
+  background: var(--theme-elevation-0) !important;
+}
+
+/* Navigation */
+.nav {
+  background: rgba(22, 22, 29, 0.95) !important;
+  border-right: 1px solid rgba(139, 92, 246, 0.1) !important;
+  backdrop-filter: blur(10px);
+}
+
+.nav-group__toggle {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.05em;
+}
+
+.nav-item {
+  border-radius: 8px !important;
+  margin: 0.125rem 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav-item a {
+  color: rgba(255, 255, 255, 0.75) !important;
+  padding: 0.625rem 0.875rem !important;
+}
+
+.nav-item:hover {
+  background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.nav-item:hover a {
+  color: #ffffff !important;
+}
+
+.nav-item.active {
+  background: rgba(139, 92, 246, 0.15) !important;
+}
+
+.nav-item.active a {
+  color: #a78bfa !important;
+}
+
+/* Header */
+.app-header {
+  background: rgba(22, 22, 29, 0.95) !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Cards */
+.card {
+  background: rgba(22, 22, 29, 0.8) !important;
+  border: 1px solid rgba(139, 92, 246, 0.15) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Tables */
+.table {
+  background: transparent !important;
+}
+
+.table th {
+  background: rgba(28, 28, 38, 0.6) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1) !important;
+}
+
+.table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.table tr:hover td {
+  background: rgba(139, 92, 246, 0.05) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(22, 22, 29, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.5);
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Select dropdown styling */
+.rs__control {
+  background: rgba(28, 28, 38, 0.8) !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border-radius: 10px !important;
+  min-height: 44px !important;
+}
+
+.rs__control:hover {
+  border-color: rgba(139, 92, 246, 0.4) !important;
+}
+
+.rs__control--is-focused {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+}
+
+.rs__menu {
+  background: rgba(28, 28, 38, 0.98) !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.rs__option:hover {
+  background: rgba(139, 92, 246, 0.15) !important;
+}
+
+.rs__option--is-selected {
+  background: rgba(139, 92, 246, 0.25) !important;
+}
+
+.rs__single-value,
+.rs__input-container {
+  color: #ffffff !important;
+}
+
+.rs__placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .template-minimal form,
+  .login form,
+  .create-first-user form {
+    margin: 1rem;
+    padding: 1.75rem !important;
+    border-radius: 16px !important;
+  }
+
+  .form-header h1 {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Minimal template content area */
+.template-minimal__content {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Hide password toggle icon styling */
+.field-type.password .input-wrapper {
+  position: relative;
+}
+
+.field-type.password .input-wrapper input {
+  padding-right: 3rem !important;
+}
+
+.field-type.password .input-wrapper button {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.field-type.password .input-wrapper button:hover {
+  color: #8b5cf6;
+}
+
+/* Step nav for create first user */
+.step-nav {
+  margin-bottom: 1.5rem;
+}
+
+.step-nav a {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.step-nav a:hover {
+  color: #a78bfa !important;
+}
+
+/* Render custom components wrapper */
+.render-custom-component {
+  width: 100%;
+}
+
+/* Hide ALL Payload default graphics/icons/images */
+.graphic-icon,
+.graphic-logo,
+.graphic,
+.graphic-account,
+[class*="graphic-"],
+.template-minimal__branding svg,
+.template-minimal__branding img,
+.template-minimal svg[width="150"],
+.template-minimal svg[width="250"],
+.template-minimal svg[height="150"],
+.template-minimal svg[height="250"],
+.template-minimal__branding > svg,
+.template-minimal__branding > img,
+.payload-icon,
+.default-icon {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Hide large SVGs in login/create-first-user */
+.template-minimal svg,
+.login svg:not(.icon),
+.create-first-user svg:not(.icon) {
+  max-width: 24px !important;
+  max-height: 24px !important;
+}
+
+/* But allow small icons */
+.btn svg,
+button svg,
+.field-type svg {
+  max-width: 20px !important;
+  max-height: 20px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Custom branding replacement */
+.template-minimal__branding {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.template-minimal__branding::before {
+  content: "CC";
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%);
+  border-radius: 14px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.02em;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+.template-minimal__branding-wrap h1,
+.template-minimal__branding span {
+  display: none !important;
+}
+
+/* Add app name after the logo */
+.template-minimal__branding::after {
+  content: "Counter Culture";
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+/* Card/widget icons in dashboard */
+.card__icon,
+.dashboard-card__icon,
+.collection-card__icon {
+  width: 40px !important;
+  height: 40px !important;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(192, 132, 252, 0.2) 100%) !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.card__icon svg,
+.dashboard-card__icon svg,
+.collection-card__icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: #a78bfa !important;
+}
+
+/* Fix thumbnail/preview images */
+.thumbnail,
+.file-preview,
+.upload-preview {
+  border-radius: 8px !important;
+  overflow: hidden;
+  background: rgba(28, 28, 38, 0.6) !important;
+  border: 1px solid rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Empty state graphics */
+.empty-state__graphic,
+.no-results__graphic {
+  opacity: 0.5;
+  filter: grayscale(100%) brightness(1.5);
+}

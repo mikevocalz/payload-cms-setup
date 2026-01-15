@@ -65,6 +65,10 @@ const config = buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    theme: 'dark',
+    components: {
+      providers: ['/components/admin/AdminStyleProvider'],
+    },
   },
   serverURL: process.env.PAYLOAD_SERVER_URL || "http://localhost:3000",
   collections: [
