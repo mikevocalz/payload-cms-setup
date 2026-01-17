@@ -1,63 +1,67 @@
-import { postgresAdapter } from "@payloadcms/db-postgres"
-import { lexicalEditor } from "@payloadcms/richtext-lexical"
-import { buildConfig } from "payload"
-import sharp from "sharp"
-import { fileURLToPath } from "url"
-import path from "path"
-import { payloadRealTime } from "@alejotoro-o/payload-real-time"
+import { postgresAdapter } from "@payloadcms/db-postgres";
+import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { buildConfig } from "payload";
+import sharp from "sharp";
+import { fileURLToPath } from "url";
+import path from "path";
+import { payloadRealTime } from "@alejotoro-o/payload-real-time";
 
 // Core Identity & Access
-import { Users } from "./collections/Users"
-import { Profiles } from "./collections/Profiles"
-import { Accounts } from "./collections/Accounts"
+import { Users } from "./collections/Users";
+import { Profiles } from "./collections/Profiles";
+import { Accounts } from "./collections/Accounts";
 
 // Social Graph
-import { Follows } from "./collections/Follows"
-import { Blocks } from "./collections/Blocks"
+import { Follows } from "./collections/Follows";
+import { Blocks } from "./collections/Blocks";
 
 // Content System
-import { Posts } from "./collections/Posts"
-import { Stories } from "./collections/Stories"
-import { Media } from "./collections/Media"
-import { Comments } from "./collections/Comments"
-import { Reactions } from "./collections/Reactions"
-import { Hashtags } from "./collections/Hashtags"
-import { Likes } from "./collections/Likes"
+import { Posts } from "./collections/Posts";
+import { Stories } from "./collections/Stories";
+import { Media } from "./collections/Media";
+import { Comments } from "./collections/Comments";
+import { Reactions } from "./collections/Reactions";
+import { Hashtags } from "./collections/Hashtags";
+import { Likes } from "./collections/Likes";
 
 // Tagging & Saves
-import { Bookmarks } from "./collections/Bookmarks"
-import { UserTags } from "./collections/UserTags"
+import { Bookmarks } from "./collections/Bookmarks";
+import { UserTags } from "./collections/UserTags";
 
 // Realtime Messaging
-import { Conversations } from "./collections/Conversations"
-import { Messages } from "./collections/Messages"
+import { Conversations } from "./collections/Conversations";
+import { Messages } from "./collections/Messages";
 
 // Realtime Notifications
-import { Notifications } from "./collections/Notifications"
+import { Notifications } from "./collections/Notifications";
 
 // Moderation & Safety
-import { Reports } from "./collections/Reports"
-import { ModerationActions } from "./collections/ModerationActions"
-import { ContentFlags } from "./collections/ContentFlags"
-import { DeviceBans } from "./collections/DeviceBans"
+import { Reports } from "./collections/Reports";
+import { ModerationActions } from "./collections/ModerationActions";
+import { ContentFlags } from "./collections/ContentFlags";
+import { DeviceBans } from "./collections/DeviceBans";
 
 // Monetization
-import { SubscriptionTiers } from "./collections/SubscriptionTiers"
-import { Subscriptions } from "./collections/Subscriptions"
-import { Transactions } from "./collections/Transactions"
-
+import { SubscriptionTiers } from "./collections/SubscriptionTiers";
+import { Subscriptions } from "./collections/Subscriptions";
+import { Transactions } from "./collections/Transactions";
 
 // App Config
-import { Settings } from "./collections/Settings"
-import { FeatureFlags } from "./collections/FeatureFlags"
+import { Settings } from "./collections/Settings";
+import { FeatureFlags } from "./collections/FeatureFlags";
 
 // Analytics
-import { Events } from "./collections/Events"
-import { EventRsvps } from "./collections/EventRsvps"
-import { StoryViews } from "./collections/StoryViews"
+import { Events } from "./collections/Events";
+import { EventRsvps } from "./collections/EventRsvps";
+import { StoryViews } from "./collections/StoryViews";
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+// Website Template (Page Builder)
+import { Pages } from "./collections/Pages";
+import { Categories } from "./collections/Categories";
+import { LegalPages } from "./collections/LegalPages";
+
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 const config = buildConfig({
   admin: {
@@ -65,12 +69,22 @@ const config = buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    theme: 'dark',
+    theme: "dark",
     components: {
-      providers: ['/components/admin/AdminStyleProvider'],
+      providers: ["/components/admin/AdminStyleProvider"],
+      beforeDashboard: ["/components/admin/dashboard/Dashboard"],
     },
   },
   serverURL: process.env.PAYLOAD_SERVER_URL || "http://localhost:3000",
+  cors: [
+    process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
+    "http://localhost:8081", // Expo dev
+    "http://localhost:19006", // Expo web
+    "exp://localhost:8081", // Expo Go
+    ...(process.env.EXPO_PUBLIC_API_URL
+      ? [process.env.EXPO_PUBLIC_API_URL]
+      : []),
+  ],
   collections: [
     // Core Identity & Access
     Users,
@@ -111,6 +125,10 @@ const config = buildConfig({
     Events,
     EventRsvps,
     StoryViews,
+    // Website Template (Page Builder)
+    Pages,
+    Categories,
+    LegalPages,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
@@ -119,7 +137,10 @@ const config = buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL || process.env.POSTGRES_URL,
+      connectionString:
+        process.env.DATABASE_URI ||
+        process.env.DATABASE_URL ||
+        process.env.POSTGRES_URL,
     },
   }),
   sharp,
@@ -128,15 +149,18 @@ const config = buildConfig({
       collections: {
         messages: {
           room: (doc: any) => {
-            return doc.conversation ? `conversation:${doc.conversation}` : undefined
+            return doc.conversation
+              ? `conversation:${doc.conversation}`
+              : undefined;
           },
           events: ["create", "update"],
         },
         notifications: {
           room: (doc: any) => {
-            const recipient = doc.recipient
-            const recipientId = typeof recipient === "number" ? recipient : recipient?.id
-            return recipientId ? `user:${recipientId}` : undefined
+            const recipient = doc.recipient;
+            const recipientId =
+              typeof recipient === "number" ? recipient : recipient?.id;
+            return recipientId ? `user:${recipientId}` : undefined;
           },
           events: ["create"],
         },
@@ -154,7 +178,7 @@ const config = buildConfig({
       requireAuth: true,
     }),
   ],
-})
+});
 
-export { config }
-export default config
+export { config };
+export default config;

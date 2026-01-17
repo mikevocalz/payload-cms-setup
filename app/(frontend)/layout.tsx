@@ -35,9 +35,11 @@ export default function FrontendLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="font-sans antialiased">
-      {children}
-      <Analytics />
-    </div>
+    <html lang="en">
+      <body className="font-sans antialiased">
+        {children}
+        <Analytics />
+      </body>
+    </html>
   )
 }

@@ -7,6 +7,8 @@ export const Users: CollectionConfig = {
   },
   auth: {
     depth: 2,
+    useAPIKey: true,
+    tokenExpiration: 60 * 60 * 24 * 30, // 30 days
   },
   fields: [
     {
