@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
@@ -8,37 +8,42 @@ export const Posts: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: () => true,
   },
   hooks: {
     afterChange: [
       async ({ doc, req, operation }) => {
         if (operation === "create") {
           // Update user's posts count
-          const { payload } = req
+          const { payload } = req;
           const author = await payload.findByID({
             collection: "users",
             id: doc.author,
-          })
+          });
           await payload.update({
             collection: "users",
             id: doc.author,
             data: {
               postsCount: (author.postsCount || 0) + 1,
             },
-          })
+          });
 
           // Parse and create hashtags
-          const hashtagRegex = /#(\w+)/g
-          const matches = doc.content.match(hashtagRegex)
+          const hashtagRegex = /#(\w+)/g;
+          const matches = doc.content.match(hashtagRegex);
           if (matches) {
-            const uniqueTags = [...new Set(matches.map((tag: string) => tag.slice(1).toLowerCase()))]
+            const uniqueTags = [
+              ...new Set(
+                matches.map((tag: string) => tag.slice(1).toLowerCase()),
+              ),
+            ];
             for (const tag of uniqueTags) {
               try {
                 const existingTag = await payload.find({
                   collection: "hashtags",
                   where: { tag: { equals: tag } },
                   limit: 1,
-                })
+                });
                 if (existingTag.docs.length > 0) {
                   await payload.update({
                     collection: "hashtags",
@@ -46,20 +51,20 @@ export const Posts: CollectionConfig = {
                     data: {
                       usageCount: (existingTag.docs[0].usageCount || 0) + 1,
                     },
-                  })
+                  });
                 } else {
                   await payload.create({
                     collection: "hashtags",
                     data: { tag, usageCount: 1 },
-                  })
+                  });
                 }
               } catch (error) {
-                console.error("[v0] Error creating/updating hashtag:", error)
+                console.error("[v0] Error creating/updating hashtag:", error);
               }
             }
           }
         }
-        return doc
+        return doc;
       },
     ],
   },
@@ -178,4 +183,4 @@ export const Posts: CollectionConfig = {
       },
     },
   ],
-}
+};

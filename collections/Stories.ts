@@ -1,9 +1,13 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from "payload";
 
 export const Stories: CollectionConfig = {
   slug: "stories",
   admin: {
     useAsTitle: "author",
+  },
+  access: {
+    read: () => true,
+    create: () => true,
   },
   fields: [
     {
@@ -60,9 +64,9 @@ export const Stories: CollectionConfig = {
       type: "date",
       required: true,
       defaultValue: () => {
-        const date = new Date()
-        date.setHours(date.getHours() + 24) // 24 hours from now
-        return date
+        const date = new Date();
+        date.setHours(date.getHours() + 24); // 24 hours from now
+        return date;
       },
     },
     {
@@ -95,4 +99,4 @@ export const Stories: CollectionConfig = {
       },
     },
   ],
-}
+};
