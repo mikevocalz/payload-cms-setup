@@ -6,6 +6,28 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URI,
   }),
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
+  trustedOrigins: async (request) => {
+    const origin = request.headers.get("origin");
+    // Allow requests with no origin (mobile apps)
+    if (!origin) return true;
+    // Allow specific origins
+    const allowed = [
+      process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
+      "https://payload-cms-setup-gray.vercel.app",
+      "http://localhost:8081",
+      "exp://localhost:8081",
+    ];
+    return allowed.includes(origin);
+  },
   emailAndPassword: {
     username: true,
     enabled: true,
@@ -29,13 +51,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [admin(), username()],
-  trustedOrigins: [
-    process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
-    "https://appleid.apple.com", // Required for Apple Sign In
-    "http://localhost:8081", // Expo dev
-    "exp://localhost:8081", // Expo Go
-    "dvnt://", // Expo app scheme
-  ],
   secret: process.env.BETTER_AUTH_SECRET || "",
   baseURL:
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
