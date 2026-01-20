@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const Messages: CollectionConfig = {
   slug: "messages",
@@ -7,12 +7,12 @@ export const Messages: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      if (!user) return false
+      if (!user) return false;
       return {
         "conversation.participants": {
           contains: user.id,
         },
-      }
+      };
     },
   },
   fields: [
@@ -40,11 +40,26 @@ export const Messages: CollectionConfig = {
       name: "media",
       type: "array",
       maxRows: 4,
+      admin: {
+        description: "Media attachments (uploaded to CDN)",
+      },
       fields: [
         {
-          name: "file",
-          type: "upload",
-          relationTo: "media",
+          name: "type",
+          type: "select",
+          options: [
+            { label: "Image", value: "image" },
+            { label: "Video", value: "video" },
+          ],
+          required: true,
+        },
+        {
+          name: "url",
+          type: "text",
+          required: true,
+          admin: {
+            description: "CDN URL of the media file",
+          },
         },
       ],
     },
@@ -74,18 +89,18 @@ export const Messages: CollectionConfig = {
     afterChange: [
       async ({ doc, req, operation }) => {
         if (operation === "create") {
-          const { payload } = req
+          const { payload } = req;
           // Update conversation's lastMessageAt
           await payload.update({
             collection: "conversations",
             id: doc.conversation,
             data: {
-              lastMessageAt: new Date(),
+              lastMessageAt: new Date().toISOString(),
             },
-          })
+          });
         }
-        return doc
+        return doc;
       },
     ],
   },
-}
+};
