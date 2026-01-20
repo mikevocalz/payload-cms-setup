@@ -14,14 +14,47 @@ export const Stories: CollectionConfig = {
       name: "author",
       type: "relationship",
       relationTo: "users",
-      required: true,
+      required: false,
       index: true,
+    },
+    {
+      name: "externalAuthorId",
+      type: "text",
+      index: true,
+      admin: {
+        description: "External user ID from Better Auth",
+      },
     },
     {
       name: "media",
       type: "upload",
       relationTo: "media",
-      required: true,
+      required: false,
+    },
+    {
+      name: "items",
+      type: "array",
+      fields: [
+        {
+          name: "type",
+          type: "select",
+          options: [
+            { label: "Image", value: "image" },
+            { label: "Video", value: "video" },
+          ],
+          required: true,
+        },
+        {
+          name: "url",
+          type: "text",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "viewed",
+      type: "checkbox",
+      defaultValue: false,
     },
     {
       name: "caption",

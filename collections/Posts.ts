@@ -13,30 +13,40 @@ export const Posts: CollectionConfig = {
   hooks: {
     afterChange: [
       async ({ doc, req, operation }) => {
-        if (operation === "create") {
+        if (operation === "create" && doc.author) {
           // Update user's posts count
-          const { payload } = req;
-          const author = await payload.findByID({
-            collection: "users",
-            id: doc.author,
-          });
-          await payload.update({
-            collection: "users",
-            id: doc.author,
-            data: {
-              postsCount: (author.postsCount || 0) + 1,
-            },
-          });
+          try {
+            const { payload } = req;
+            const author = await payload.findByID({
+              collection: "users",
+              id: doc.author,
+            });
+            if (author) {
+              await payload.update({
+                collection: "users",
+                id: doc.author,
+                data: {
+                  postsCount: (author.postsCount || 0) + 1,
+                },
+              });
+            }
+          } catch (e) {
+            // Author might be external, skip count update
+            console.log(
+              "[Posts] Skipping post count update - author may be external",
+            );
+          }
+        }
 
-          // Parse and create hashtags
+        // Parse and create hashtags
+        if (operation === "create" && doc.content) {
+          const { payload } = req;
           const hashtagRegex = /#(\w+)/g;
           const matches = doc.content.match(hashtagRegex);
           if (matches) {
-            const uniqueTags = [
-              ...new Set(
-                matches.map((tag: string) => tag.slice(1).toLowerCase()),
-              ),
-            ];
+            const uniqueTags = Array.from(
+              new Set(matches.map((tag: string) => tag.slice(1).toLowerCase())),
+            ) as string[];
             for (const tag of uniqueTags) {
               try {
                 const existingTag = await payload.find({
@@ -73,13 +83,21 @@ export const Posts: CollectionConfig = {
       name: "author",
       type: "relationship",
       relationTo: "users",
-      required: true,
+      required: false,
       index: true,
+    },
+    {
+      name: "externalAuthorId",
+      type: "text",
+      index: true,
+      admin: {
+        description: "External user ID from Better Auth",
+      },
     },
     {
       name: "content",
       type: "textarea",
-      required: true,
+      required: false,
       maxLength: 5000,
     },
     {
@@ -92,6 +110,21 @@ export const Posts: CollectionConfig = {
       type: "array",
       maxRows: 4,
       fields: [
+        {
+          name: "type",
+          type: "select",
+          options: [
+            { label: "Image", value: "image" },
+            { label: "Video", value: "video" },
+          ],
+        },
+        {
+          name: "url",
+          type: "text",
+          admin: {
+            description: "External URL for media",
+          },
+        },
         {
           name: "image",
           type: "upload",
