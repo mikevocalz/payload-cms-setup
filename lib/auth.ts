@@ -1,6 +1,6 @@
-import { betterAuth } from "better-auth"
-import { admin, username } from "better-auth/plugins"
-import { Pool } from "pg"
+import { betterAuth } from "better-auth";
+import { admin, username } from "better-auth/plugins";
+import { Pool } from "pg";
 
 export const auth = betterAuth({
   database: new Pool({
@@ -28,14 +28,17 @@ export const auth = betterAuth({
       clientSecret: process.env.APPLE_CLIENT_SECRET || "",
     },
   },
-  plugins: [
-    admin(),
-    username()
-  ],
+  plugins: [admin(), username()],
   trustedOrigins: [
     process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
     "https://appleid.apple.com", // Required for Apple Sign In
+    "http://localhost:8081", // Expo dev
+    "exp://localhost:8081", // Expo Go
+    "dvnt://", // Expo app scheme
   ],
   secret: process.env.BETTER_AUTH_SECRET || "",
-  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
-})
+  baseURL:
+    process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
+    process.env.NEXT_PUBLIC_SERVER_URL ||
+    "http://localhost:3000",
+});

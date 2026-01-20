@@ -343,11 +343,20 @@ export interface Block {
  */
 export interface Post {
   id: number;
-  author: number | User;
-  content: string;
+  author?: (number | null) | User;
+  /**
+   * External user ID from Better Auth
+   */
+  externalAuthorId?: string | null;
+  content?: string | null;
   location?: string | null;
   media?:
     | {
+        type?: ('image' | 'video') | null;
+        /**
+         * External URL for media
+         */
+        url?: string | null;
         image?: (number | null) | Media;
         id?: string | null;
       }[]
@@ -386,8 +395,20 @@ export interface Hashtag {
  */
 export interface Story {
   id: number;
-  author: number | User;
-  media: number | Media;
+  author?: (number | null) | User;
+  /**
+   * External user ID from Better Auth
+   */
+  externalAuthorId?: string | null;
+  media?: (number | null) | Media;
+  items?:
+    | {
+        type: 'image' | 'video';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  viewed?: boolean | null;
   caption?: string | null;
   location?: string | null;
   stickers?:
@@ -671,13 +692,33 @@ export interface FeatureFlag {
  */
 export interface Event {
   id: number;
-  host: number | User;
+  host?: (number | null) | User;
+  /**
+   * External user ID from Better Auth
+   */
+  externalAuthorId?: string | null;
   title: string;
   description?: string | null;
-  startDate: string;
+  /**
+   * Event date (alternative to startDate for mobile app)
+   */
+  date?: string | null;
+  startDate?: string | null;
   endDate?: string | null;
+  /**
+   * Human-readable time string (e.g., '7:00 PM')
+   */
+  time?: string | null;
   location?: string | null;
   coverImage?: (number | null) | Media;
+  /**
+   * External image URL for mobile app
+   */
+  image?: string | null;
+  price?: number | null;
+  category?: ('music' | 'sports' | 'art' | 'food' | 'tech' | 'business' | 'health' | 'other') | null;
+  likes?: number | null;
+  totalAttendees?: number | null;
   isOnline?: boolean | null;
   maxAttendees?: number | null;
   createdAt: string;
@@ -1246,11 +1287,14 @@ export interface BlocksSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   author?: T;
+  externalAuthorId?: T;
   content?: T;
   location?: T;
   media?:
     | T
     | {
+        type?: T;
+        url?: T;
         image?: T;
         id?: T;
       };
@@ -1274,7 +1318,16 @@ export interface PostsSelect<T extends boolean = true> {
  */
 export interface StoriesSelect<T extends boolean = true> {
   author?: T;
+  externalAuthorId?: T;
   media?: T;
+  items?:
+    | T
+    | {
+        type?: T;
+        url?: T;
+        id?: T;
+      };
+  viewed?: T;
   caption?: T;
   location?: T;
   stickers?:
@@ -1601,12 +1654,20 @@ export interface FeatureFlagsSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   host?: T;
+  externalAuthorId?: T;
   title?: T;
   description?: T;
+  date?: T;
   startDate?: T;
   endDate?: T;
+  time?: T;
   location?: T;
   coverImage?: T;
+  image?: T;
+  price?: T;
+  category?: T;
+  likes?: T;
+  totalAttendees?: T;
   isOnline?: T;
   maxAttendees?: T;
   createdAt?: T;
