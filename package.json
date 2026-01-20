@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@alejotoro-o/payload-real-time": "^1.2.0",
+    "@better-auth/expo": "^1.4.15",
     "@better-auth/passkey": "latest",
     "@faceless-ui/modal": "latest",
     "@faceless-ui/scroll-info": "latest",

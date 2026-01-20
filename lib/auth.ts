@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { admin, username } from "better-auth/plugins";
+import { expo } from "@better-auth/expo";
 import { Pool } from "pg";
 
 export const auth = betterAuth({
@@ -48,7 +49,7 @@ export const auth = betterAuth({
       clientSecret: process.env.APPLE_CLIENT_SECRET || "",
     },
   },
-  plugins: [admin(), username()],
+  plugins: [admin(), username(), expo()],
   secret: process.env.BETTER_AUTH_SECRET || "",
   baseURL:
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
