@@ -15,19 +15,14 @@ export const auth = betterAuth({
       secure: true,
     },
   },
-  trustedOrigins: async (request) => {
-    const origin = request.headers.get("origin");
-    // Allow requests with no origin (mobile apps)
-    if (!origin) return true;
-    // Allow specific origins
-    const allowed = [
-      process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
-      "https://payload-cms-setup-gray.vercel.app",
-      "http://localhost:8081",
-      "exp://localhost:8081",
-    ];
-    return allowed.includes(origin);
-  },
+  trustedOrigins: [
+    process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
+    "https://payload-cms-setup-gray.vercel.app",
+    "http://localhost:8081",
+    "exp://localhost:8081",
+    "dvnt://",
+    "*", // Allow all origins for mobile app support
+  ],
   emailAndPassword: {
     username: true,
     enabled: true,
