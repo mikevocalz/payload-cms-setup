@@ -8,11 +8,12 @@ export const auth = betterAuth({
   }),
   advanced: {
     crossSubDomainCookies: {
-      enabled: true,
+      enabled: false,
     },
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
+      domain: undefined, // Don't set domain for mobile apps
     },
   },
   trustedOrigins: [
