@@ -13,19 +13,21 @@ export const auth = betterAuth({
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
-      domain: undefined, // Don't set domain for mobile apps
+      httpOnly: true,
+      path: "/",
     },
+    // Disable origin check for mobile apps (they don't send origin headers)
+    disableCSRFCheck: true,
   },
   trustedOrigins: [
     process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
     "https://payload-cms-setup-gray.vercel.app",
     "http://localhost:8081",
+    "http://localhost:19006",
     "exp://localhost:8081",
     "dvnt://",
-    "*", // Allow all origins for mobile app support
-  ],
+  ] as string[],
   emailAndPassword: {
-    username: true,
     enabled: true,
     requireEmailVerification: false,
   },

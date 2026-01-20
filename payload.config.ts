@@ -73,6 +73,10 @@ const config = buildConfig({
     components: {
       providers: ["/components/admin/AdminStyleProvider"],
       beforeDashboard: ["/components/admin/dashboard/Dashboard"],
+      graphics: {
+        Logo: "/components/admin/ui/logo#Logo",
+        Icon: "/components/admin/ui/logo#Logo",
+      },
     },
   },
   serverURL: process.env.PAYLOAD_SERVER_URL || "http://localhost:3000",
