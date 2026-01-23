@@ -1,7 +1,7 @@
 /**
  * Expo API Client for Payload CMS
  * Copy this to your Expo app and configure the API_URL
- * 
+ *
  * TWO AUTH OPTIONS:
  * 1. API Key (recommended for mobile apps) - set once, persists
  * 2. JWT Token (from login) - expires, needs refresh
@@ -37,7 +37,7 @@ class PayloadAPI {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -91,7 +91,10 @@ class PayloadAPI {
   }
 
   // Generic CRUD
-  async find<T>(collection: string, query?: Record<string, any>): Promise<{ docs: T[]; totalDocs: number }> {
+  async find<T>(
+    collection: string,
+    query?: Record<string, any>,
+  ): Promise<{ docs: T[]; totalDocs: number }> {
     const params = query ? `?${new URLSearchParams(query as any)}` : "";
     return this.request(`/${collection}${params}`);
   }
@@ -107,7 +110,11 @@ class PayloadAPI {
     });
   }
 
-  async update<T>(collection: string, id: string | number, data: Partial<T>): Promise<T> {
+  async update<T>(
+    collection: string,
+    id: string | number,
+    data: Partial<T>,
+  ): Promise<T> {
     return this.request(`/${collection}/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
@@ -116,6 +123,92 @@ class PayloadAPI {
 
   async delete(collection: string, id: string | number): Promise<void> {
     return this.request(`/${collection}/${id}`, { method: "DELETE" });
+  }
+
+  // Comments API
+  async getPostComments(
+    postId: string,
+    query?: Record<string, any>,
+  ): Promise<{
+    docs: any[];
+    totalDocs: number;
+    totalPages: number;
+    page: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  }> {
+    const params = query ? `&${new URLSearchParams(query as any)}` : "";
+    return this.request(`/comments?postId=${postId}${params}`);
+  }
+
+  async getCommentWithReplies(commentId: string): Promise<any> {
+    return this.request(`/comments/${commentId}`);
+  }
+
+  async createComment(data: {
+    content: string;
+    post: string;
+    author: string;
+    parentComment?: string;
+  }): Promise<any> {
+    return this.request("/comments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Bookmarks API
+  async getBookmarks(query?: {
+    limit?: number;
+    page?: number;
+    sort?: string;
+  }): Promise<{
+    docs: any[];
+    totalDocs: number;
+    totalPages: number;
+    page: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  }> {
+    const params = query ? `?${new URLSearchParams(query as any)}` : "";
+    return this.request(`/bookmarks${params}`);
+  }
+
+  async toggleBookmark(
+    postId: string,
+  ): Promise<{ bookmarked: boolean; bookmark?: any }> {
+    try {
+      // Check if bookmark already exists
+      const existing = await this.request<{ docs: any[] }>(
+        `/bookmarks?where[post][equals]=${postId}&limit=1`,
+      );
+
+      if (existing.docs.length > 0) {
+        // Remove bookmark
+        await this.delete("bookmarks", existing.docs[0].id);
+        return { bookmarked: false };
+      } else {
+        // Create bookmark
+        const bookmark = await this.create("bookmarks", { post: postId });
+        return { bookmarked: true, bookmark };
+      }
+    } catch (error) {
+      throw new Error(
+        `Failed to toggle bookmark: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
+
+  async isBookmarked(postId: string): Promise<boolean> {
+    try {
+      const result = await this.request<{ docs: any[] }>(
+        `/bookmarks?where[post][equals]=${postId}&limit=1`,
+      );
+      return result.docs.length > 0;
+    } catch (error) {
+      // If request fails, assume not bookmarked for offline functionality
+      return false;
+    }
   }
 }
 
@@ -136,4 +229,47 @@ const newPost = await api.create('posts', { title: 'Hello', content: '...' });
 
 // Get user profile
 const profile = await api.findById('profiles', user.id);
+
+// Bookmark operations
+const { bookmarked } = await api.toggleBookmark('post-id-here');
+const isBookmarked = await api.isBookmarked('post-id-here');
+const { docs: bookmarkedPosts } = await api.getBookmarks({ limit: 20 });
+
+// Get threaded comments for a post
+const { docs: comments } = await api.getPostComments('post-id-here', { 
+  limit: 20, 
+  page: 1 
+});
+
+// Each comment includes its replies:
+comments.forEach(comment => {
+  console.log('Comment:', comment.content);
+  console.log('Author:', comment.author.name);
+  console.log('Replies:', comment.replies.length);
+  
+  comment.replies.forEach(reply => {
+    console.log('Reply:', reply.content);
+    console.log('Reply Author:', reply.author.name);
+  });
+});
+
+// Create a top-level comment on a post
+const topLevelComment = await api.createComment({
+  content: 'Great post!',
+  post: 'post-id-here',
+  author: user.id,
+});
+
+// Create a reply to a comment (threaded)
+const replyComment = await api.createComment({
+  content: 'I agree with your comment!',
+  post: 'post-id-here',
+  author: user.id,
+  parentComment: topLevelComment.id, // This creates a threaded reply
+});
+
+// Get a single comment with its replies
+const commentWithReplies = await api.getCommentWithReplies('comment-id-here');
+console.log('Comment:', commentWithReplies.content);
+console.log('Replies:', commentWithReplies.replies);
 */
