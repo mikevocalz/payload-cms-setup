@@ -10,6 +10,45 @@ export const Users: CollectionConfig = {
     useAPIKey: true,
     tokenExpiration: 60 * 60 * 24 * 30, // 30 days
   },
+  hooks: {
+    beforeValidate: [
+      async ({ data, operation, req }) => {
+        // Check for duplicate email on create
+        if (operation === "create" && data?.email) {
+          const existingUser = await req.payload.find({
+            collection: "users",
+            where: { email: { equals: data.email.toLowerCase() } },
+            limit: 1,
+          });
+          
+          if (existingUser.docs.length > 0) {
+            throw new Error("An account with this email already exists");
+          }
+          
+          // Normalize email to lowercase
+          data.email = data.email.toLowerCase();
+        }
+        
+        // Check for duplicate username on create
+        if (operation === "create" && data?.username) {
+          const existingUsername = await req.payload.find({
+            collection: "users",
+            where: { username: { equals: data.username.toLowerCase() } },
+            limit: 1,
+          });
+          
+          if (existingUsername.docs.length > 0) {
+            throw new Error("This username is already taken");
+          }
+          
+          // Normalize username to lowercase
+          data.username = data.username.toLowerCase();
+        }
+        
+        return data;
+      },
+    ],
+  },
   fields: [
     {
       name: "username",
