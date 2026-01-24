@@ -1,156 +1,126 @@
-import type { CollectionConfig } from "payload"
+/**
+ * Payload CMS Comments Collection
+ *
+ * Comments on posts with support for nested replies
+ *
+ * @see https://payloadcms.com/docs/configuration/collections
+ */
+
+import type { CollectionConfig } from "payload";
 
 export const Comments: CollectionConfig = {
   slug: "comments",
   admin: {
     useAsTitle: "content",
-    defaultColumns: ["author", "post", "createdAt"],
+    defaultColumns: ["author", "post", "content", "createdAt"],
+    group: "Engagement",
   },
   access: {
     read: () => true,
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => Boolean(user),
   },
   hooks: {
-    beforeValidate: [
-      async ({ data, req, operation }) => {
-        // Enforce two-level depth rule: parentComment may only reference a top-level comment
-        if (operation === "create" && data?.parentComment) {
-          const { payload } = req
-          const parentComment = await payload.findByID({
-            collection: "comments",
-            id: data.parentComment,
-          })
-          if (parentComment?.parentComment) {
-            throw new Error("Comments can only be two levels deep. Cannot reply to a reply.")
-          }
+    beforeChange: [
+      ({ data, req }) => {
+        // Auto-set author to current user on create
+        if (req.user && !data.author) {
+          data.author = req.user.id;
         }
-        return data
+        return data;
       },
     ],
     afterChange: [
-      async ({ doc, req, operation }) => {
-        if (operation === "create") {
-          const { payload } = req
+      async ({ doc, operation, req }) => {
+        // Update post's comment count on create
+        if (operation === "create" && doc.post) {
+          try {
+            const postId = typeof doc.post === "string" ? doc.post : doc.post.id;
+            const post = await req.payload.findByID({
+              collection: "posts",
+              id: postId,
+            });
 
-          // Update post comments count
-          const post = await payload.findByID({
-            collection: "posts",
-            id: doc.post,
-          })
-          await payload.update({
-            collection: "posts",
-            id: doc.post,
-            data: {
-              commentsCount: (post.commentsCount || 0) + 1,
-            },
-          })
-
-          // Create notification for post author
-          if (post.author !== doc.author) {
-            await payload.create({
-              collection: "notifications",
-              data: {
-                recipient: post.author,
-                sender: doc.author,
-                type: "comment",
-                post: doc.post,
-                comment: doc.id,
-              },
-            })
-          }
-
-          // If replying to a comment, notify parent comment author
-          if (doc.parentComment) {
-            const parentComment = await payload.findByID({
-              collection: "comments",
-              id: doc.parentComment,
-            })
-            if (parentComment.author !== doc.author) {
-              await payload.create({
-                collection: "notifications",
+            if (post) {
+              await req.payload.update({
+                collection: "posts",
+                id: postId,
                 data: {
-                  recipient: parentComment.author,
-                  sender: doc.author,
-                  type: "reply",
-                  post: doc.post,
-                  comment: doc.id,
+                  commentsCount: ((post.commentsCount as number) || 0) + 1,
                 },
-              })
+              });
             }
+          } catch (error) {
+            console.error("[Comments] Error updating post comment count:", error);
           }
         }
-        return doc
-      },
-    ],
-    afterDelete: [
-      async ({ doc, req }) => {
-        const { payload } = req
-
-        // Update post comments count
-        const post = await payload.findByID({
-          collection: "posts",
-          id: doc.post,
-        })
-        await payload.update({
-          collection: "posts",
-          id: doc.post,
-          data: {
-            commentsCount: Math.max((post.commentsCount || 0) - 1, 0),
-          },
-        })
+        return doc;
       },
     ],
   },
   fields: [
+    // Author relationship
     {
       name: "author",
       type: "relationship",
       relationTo: "users",
       required: true,
-      index: true,
+      hasMany: false,
+      admin: {
+        position: "sidebar",
+      },
     },
+
+    // Post relationship
     {
       name: "post",
       type: "relationship",
       relationTo: "posts",
       required: true,
+      hasMany: false,
       index: true,
+      admin: {
+        position: "sidebar",
+      },
     },
+
+    // Comment content
     {
       name: "content",
       type: "textarea",
       required: true,
       maxLength: 1000,
+      admin: {
+        description: "Comment text (max 1000 characters)",
+      },
     },
+
+    // Parent comment (for replies)
     {
-      name: "likesCount",
-      type: "number",
-      defaultValue: 0,
-    },
-    {
-      name: "parentComment",
+      name: "parent",
       type: "relationship",
       relationTo: "comments",
-    },
-    {
-      name: "createdAt",
-      type: "date",
-      defaultValue: () => new Date(),
+      required: false,
+      hasMany: false,
       admin: {
+        position: "sidebar",
+        description: "Parent comment (if this is a reply)",
+      },
+    },
+
+    // Likes count
+    {
+      name: "likes",
+      type: "number",
+      defaultValue: 0,
+      admin: {
+        position: "sidebar",
         readOnly: true,
       },
     },
-    {
-      name: "moderationStatus",
-      type: "select",
-      options: [
-        { label: "Pending", value: "pending" },
-        { label: "Approved", value: "approved" },
-        { label: "Rejected", value: "rejected" },
-      ],
-      defaultValue: "approved",
-      admin: {
-        position: "sidebar",
-      },
-    },
   ],
-}
+  timestamps: true,
+};
+
+export default Comments;

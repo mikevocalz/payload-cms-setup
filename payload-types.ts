@@ -443,7 +443,14 @@ export interface Comment {
   post: number | Post;
   content: string;
   likesCount?: number | null;
+  /**
+   * Only set this when replying to another comment. Comments can only be two levels deep.
+   */
   parentComment?: (number | null) | Comment;
+  /**
+   * Virtual field showing replies to this comment (populated via API).
+   */
+  replies?: (number | Comment)[] | null;
   createdAt: string;
   moderationStatus?: ('pending' | 'approved' | 'rejected') | null;
   updatedAt: string;
@@ -520,9 +527,16 @@ export interface Message {
   conversation: number | Conversation;
   sender: number | User;
   content: string;
+  /**
+   * Media attachments (uploaded to CDN)
+   */
   media?:
     | {
-        file?: (number | null) | Media;
+        type: 'image' | 'video';
+        /**
+         * CDN URL of the media file
+         */
+        url: string;
         id?: string | null;
       }[]
     | null;
@@ -1417,6 +1431,7 @@ export interface CommentsSelect<T extends boolean = true> {
   content?: T;
   likesCount?: T;
   parentComment?: T;
+  replies?: T;
   createdAt?: T;
   moderationStatus?: T;
   updatedAt?: T;
@@ -1503,7 +1518,8 @@ export interface MessagesSelect<T extends boolean = true> {
   media?:
     | T
     | {
-        file?: T;
+        type?: T;
+        url?: T;
         id?: T;
       };
   mentions?: T;
