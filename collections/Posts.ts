@@ -133,12 +133,13 @@ export const Posts: CollectionConfig = {
         { label: "Private", value: "private" },
       ],
     },
-    {
-      name: "hashtags",
-      type: "relationship",
-      relationTo: "hashtags",
-      hasMany: true,
-    },
+    // NOTE: Hashtags relationship temporarily disabled to debug
+    // {
+    //   name: "hashtags",
+    //   type: "relationship",
+    //   relationTo: "hashtags",
+    //   hasMany: true,
+    // },
     {
       name: "editedAt",
       type: "date",
