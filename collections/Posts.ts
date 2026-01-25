@@ -4,20 +4,14 @@ export const Posts: CollectionConfig = {
   slug: "posts",
   admin: {
     useAsTitle: "content",
-    defaultColumns: ["author", "content", "createdAt"],
+    defaultColumns: ["content", "createdAt"],
   },
   access: {
     read: () => true,
     create: () => true,
   },
   fields: [
-    {
-      name: "author",
-      type: "relationship",
-      relationTo: "users",
-      required: false,
-      index: true,
-    },
+    // Author relationship removed for debugging
     {
       name: "externalAuthorId",
       type: "text",
@@ -74,7 +68,6 @@ export const Posts: CollectionConfig = {
       type: "checkbox",
       defaultValue: false,
     },
-    // Self-referencing relationships removed for debugging
     {
       name: "visibility",
       type: "select",
