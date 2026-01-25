@@ -74,19 +74,7 @@ export const Posts: CollectionConfig = {
       type: "checkbox",
       defaultValue: false,
     },
-    {
-      name: "originalPost",
-      type: "relationship",
-      relationTo: "posts",
-      admin: {
-        condition: (data) => data.isRepost,
-      },
-    },
-    {
-      name: "replyTo",
-      type: "relationship",
-      relationTo: "posts",
-    },
+    // Self-referencing relationships removed for debugging
     {
       name: "visibility",
       type: "select",
