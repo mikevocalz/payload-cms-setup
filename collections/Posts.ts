@@ -14,22 +14,6 @@ export const Posts: CollectionConfig = {
       name: "content",
       type: "textarea",
       required: false,
-      maxLength: 5000,
-    },
-    {
-      name: "location",
-      type: "text",
-      maxLength: 200,
-    },
-    {
-      name: "likesCount",
-      type: "number",
-      defaultValue: 0,
-    },
-    {
-      name: "isNSFW",
-      type: "checkbox",
-      defaultValue: false,
     },
   ],
 };
