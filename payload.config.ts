@@ -54,9 +54,10 @@ import { FeatureFlags } from "./collections/FeatureFlags";
 import { Events } from "./collections/Events";
 import { EventRsvps } from "./collections/EventRsvps";
 import { StoryViews } from "./collections/StoryViews";
-import { Tickets } from "./collections/Tickets";
-import { EventReviews } from "./collections/EventReviews";
-import { EventComments } from "./collections/EventComments";
+// NOTE: These collections are commented out until database tables are created via migration
+// import { Tickets } from "./collections/Tickets";
+// import { EventReviews } from "./collections/EventReviews";
+// import { EventComments } from "./collections/EventComments";
 
 // Website Template (Page Builder)
 import { Pages } from "./collections/Pages";
@@ -132,9 +133,7 @@ const config = buildConfig({
     Events,
     EventRsvps,
     StoryViews,
-    Tickets,
-    EventReviews,
-    EventComments,
+    // NOTE: Tickets, EventReviews, EventComments removed until DB tables exist
     // Website Template (Page Builder)
     Pages,
     Categories,
