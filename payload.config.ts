@@ -1,5 +1,4 @@
 import { postgresAdapter } from "@payloadcms/db-postgres";
-import { migrations } from "./migrations";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import sharp from "sharp";
@@ -152,8 +151,9 @@ const config = buildConfig({
         process.env.DATABASE_URL ||
         process.env.POSTGRES_URL,
     },
-    // Run migrations at production startup instead of during build
-    prodMigrations: migrations,
+    // Note: In production, schema must match via migrations or DB already synced
+    // Disable push mode (default) and use migrations or pre-synced DB
+    push: false,
   }),
   sharp,
   plugins: [
