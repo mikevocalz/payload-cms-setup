@@ -18,27 +18,13 @@ export async function GET(request: Request) {
 
     const payload = await getPayload({ config });
 
-    // Fetch top-level comments (no parent) for the post
-    const topLevelComments = await payload.find({
+    // Fetch all comments for the post (replies disabled for now)
+    const comments = await payload.find({
       collection: "comments",
       where: {
-        and: [
-          {
-            post: {
-              equals: postId,
-            },
-          },
-          {
-            parentComment: {
-              exists: false,
-            },
-          },
-          {
-            moderationStatus: {
-              equals: "approved",
-            },
-          },
-        ],
+        post: {
+          equals: postId,
+        },
       },
       sort: "-createdAt",
       limit,
@@ -46,44 +32,13 @@ export async function GET(request: Request) {
       depth: 2, // Populate author and post relationships
     });
 
-    // For each top-level comment, fetch its replies
-    const commentsWithReplies = await Promise.all(
-      topLevelComments.docs.map(async (comment) => {
-        // Fetch replies for this comment
-        const replies = await payload.find({
-          collection: "comments",
-          where: {
-            and: [
-              {
-                parentComment: {
-                  equals: comment.id,
-                },
-              },
-              {
-                moderationStatus: {
-                  equals: "approved",
-                },
-              },
-            ],
-          },
-          sort: "createdAt", // Sort replies chronologically
-          depth: 2, // Populate author and post relationships
-        });
-
-        return {
-          ...comment,
-          replies: replies.docs,
-        };
-      }),
-    );
-
     return NextResponse.json({
-      docs: commentsWithReplies,
-      totalDocs: topLevelComments.totalDocs,
-      totalPages: topLevelComments.totalPages,
-      page: topLevelComments.page,
-      hasNextPage: topLevelComments.hasNextPage,
-      hasPrevPage: topLevelComments.hasPrevPage,
+      docs: comments.docs,
+      totalDocs: comments.totalDocs,
+      totalPages: comments.totalPages,
+      page: comments.page,
+      hasNextPage: comments.hasNextPage,
+      hasPrevPage: comments.hasPrevPage,
     });
   } catch (error) {
     console.error("Error fetching comments:", error);
@@ -97,11 +52,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { content, post, author, parentComment } = body;
+    const { content, post, author } = body;
+
+    console.log("[Comments API] POST received:", { content: content?.slice(0, 30), post, author });
 
     if (!content || !post || !author) {
       return NextResponse.json(
-        { error: "content, post, and author are required" },
+        { error: "content, post, and author are required", received: { content: !!content, post: !!post, author: !!author } },
         { status: 400 },
       );
     }
@@ -115,16 +72,17 @@ export async function POST(request: Request) {
         content,
         post,
         author,
-        parentComment: parentComment || null,
       },
       depth: 2, // Populate relationships in response
     });
 
+    console.log("[Comments API] Created comment:", comment.id);
     return NextResponse.json(comment);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error creating comment:", error);
+    const err = error as { message?: string; data?: unknown };
     return NextResponse.json(
-      { error: "Failed to create comment" },
+      { error: "Failed to create comment", message: err?.message, details: err?.data },
       { status: 500 },
     );
   }

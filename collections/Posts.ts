@@ -215,5 +215,14 @@ export const Posts: CollectionConfig = {
         position: "sidebar",
       },
     },
+    {
+      name: "isNSFW",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        position: "sidebar",
+        description: "Mark this post as Not Safe For Work (adult content)",
+      },
+    },
   ],
 };
