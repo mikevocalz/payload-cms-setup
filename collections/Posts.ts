@@ -15,5 +15,9 @@ export const Posts: CollectionConfig = {
       type: "textarea",
       required: false,
     },
+    {
+      name: "location",
+      type: "text",
+    },
   ],
 };
