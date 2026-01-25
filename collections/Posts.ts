@@ -24,10 +24,5 @@ export const Posts: CollectionConfig = {
       type: "number",
       defaultValue: 0,
     },
-    {
-      name: "isNSFW",
-      type: "checkbox",
-      defaultValue: false,
-    },
   ],
 };
