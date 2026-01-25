@@ -10,74 +10,15 @@ export const Posts: CollectionConfig = {
     read: () => true,
     create: () => true,
   },
-  hooks: {
-    afterChange: [
-      async ({ doc, req, operation }) => {
-        if (operation === "create" && doc.author) {
-          // Update user's posts count
-          try {
-            const { payload } = req;
-            const author = await payload.findByID({
-              collection: "users",
-              id: doc.author,
-            });
-            if (author) {
-              await payload.update({
-                collection: "users",
-                id: doc.author,
-                data: {
-                  postsCount: (author.postsCount || 0) + 1,
-                },
-              });
-            }
-          } catch (e) {
-            // Author might be external, skip count update
-            console.log(
-              "[Posts] Skipping post count update - author may be external",
-            );
-          }
-        }
-
-        // Parse and create hashtags
-        if (operation === "create" && doc.content) {
-          const { payload } = req;
-          const hashtagRegex = /#(\w+)/g;
-          const matches = doc.content.match(hashtagRegex);
-          if (matches) {
-            const uniqueTags = Array.from(
-              new Set(matches.map((tag: string) => tag.slice(1).toLowerCase())),
-            ) as string[];
-            for (const tag of uniqueTags) {
-              try {
-                const existingTag = await payload.find({
-                  collection: "hashtags",
-                  where: { tag: { equals: tag } },
-                  limit: 1,
-                });
-                if (existingTag.docs.length > 0) {
-                  await payload.update({
-                    collection: "hashtags",
-                    id: existingTag.docs[0].id,
-                    data: {
-                      usageCount: (existingTag.docs[0].usageCount || 0) + 1,
-                    },
-                  });
-                } else {
-                  await payload.create({
-                    collection: "hashtags",
-                    data: { tag, usageCount: 1 },
-                  });
-                }
-              } catch (error) {
-                console.error("[v0] Error creating/updating hashtag:", error);
-              }
-            }
-          }
-        }
-        return doc;
-      },
-    ],
-  },
+  // NOTE: Hooks temporarily disabled to debug production issues
+  // hooks: {
+  //   afterChange: [
+  //     async ({ doc, req, operation }) => {
+  //       // Hook logic here
+  //       return doc;
+  //     },
+  //   ],
+  // },
   fields: [
     {
       name: "author",
