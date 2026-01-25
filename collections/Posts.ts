@@ -19,5 +19,15 @@ export const Posts: CollectionConfig = {
       name: "location",
       type: "text",
     },
+    {
+      name: "likesCount",
+      type: "number",
+      defaultValue: 0,
+    },
+    {
+      name: "isNSFW",
+      type: "checkbox",
+      defaultValue: false,
+    },
   ],
 };
