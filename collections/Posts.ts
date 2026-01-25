@@ -46,33 +46,34 @@ export const Posts: CollectionConfig = {
       type: "text",
       maxLength: 200,
     },
-    {
-      name: "media",
-      type: "array",
-      maxRows: 4,
-      fields: [
-        {
-          name: "type",
-          type: "select",
-          options: [
-            { label: "Image", value: "image" },
-            { label: "Video", value: "video" },
-          ],
-        },
-        {
-          name: "url",
-          type: "text",
-          admin: {
-            description: "External URL for media",
-          },
-        },
-        {
-          name: "image",
-          type: "upload",
-          relationTo: "media",
-        },
-      ],
-    },
+    // NOTE: Media array temporarily disabled to debug
+    // {
+    //   name: "media",
+    //   type: "array",
+    //   maxRows: 4,
+    //   fields: [
+    //     {
+    //       name: "type",
+    //       type: "select",
+    //       options: [
+    //         { label: "Image", value: "image" },
+    //         { label: "Video", value: "video" },
+    //       ],
+    //     },
+    //     {
+    //       name: "url",
+    //       type: "text",
+    //       admin: {
+    //         description: "External URL for media",
+    //       },
+    //     },
+    //     {
+    //       name: "image",
+    //       type: "upload",
+    //       relationTo: "media",
+    //     },
+    //   ],
+    // },
     {
       name: "likesCount",
       type: "number",
