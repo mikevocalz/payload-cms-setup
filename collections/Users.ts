@@ -181,5 +181,32 @@ export const Users: CollectionConfig = {
         position: "sidebar",
       },
     },
+    {
+      name: "likedPosts",
+      type: "relationship",
+      relationTo: "posts",
+      hasMany: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
+    {
+      name: "likedComments",
+      type: "relationship",
+      relationTo: "comments",
+      hasMany: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
+    {
+      name: "bookmarkedPosts",
+      type: "relationship",
+      relationTo: "posts",
+      hasMany: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
   ],
 }
