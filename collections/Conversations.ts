@@ -5,6 +5,26 @@ export const Conversations: CollectionConfig = {
   admin: {
     useAsTitle: "id",
   },
+  access: {
+    // Allow read - API route filters by participant
+    read: () => true,
+    // Allow create - API route validates participants
+    create: () => true,
+    // Allow update for participants only
+    update: ({ req }) => {
+      if (!req.user) return true; // API key auth
+      return {
+        participants: { contains: req.user.id },
+      };
+    },
+    // Only allow delete for participants
+    delete: ({ req }) => {
+      if (!req.user) return true; // API key auth
+      return {
+        participants: { contains: req.user.id },
+      };
+    },
+  },
   fields: [
     {
       name: "participants",

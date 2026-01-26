@@ -10,6 +10,26 @@ export const Users: CollectionConfig = {
     useAPIKey: true,
     tokenExpiration: 60 * 60 * 24 * 30, // 30 days
   },
+  access: {
+    // Anyone can read user profiles (public data)
+    read: () => true,
+    // Allow user creation via API (registration)
+    create: () => true,
+    // Only the user themselves or admin can update
+    update: ({ req }) => {
+      if (!req.user) return true; // API key auth
+      // Allow users to update their own profile
+      return {
+        id: { equals: req.user.id },
+      };
+    },
+    // Only admins can delete users
+    delete: ({ req }) => {
+      if (!req.user) return true; // API key auth
+      // Check if user is admin
+      return req.user.role === 'Admin' || req.user.role === 'Super-Admin';
+    },
+  },
   hooks: {
     beforeValidate: [
       async ({ data, operation, req }) => {

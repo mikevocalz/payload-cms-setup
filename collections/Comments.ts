@@ -34,26 +34,40 @@ export const Comments: CollectionConfig = {
     ],
     afterChange: [
       async ({ doc, operation, req }) => {
-        // Update post's comment count on create
-        if (operation === "create" && doc.post) {
-          try {
-            const postId = typeof doc.post === "string" ? doc.post : doc.post.id;
-            const post = await req.payload.findByID({
-              collection: "posts",
-              id: postId,
-            });
-
-            if (post) {
-              await req.payload.update({
+        if (operation === "create") {
+          // Update post's comment count on create (for post comments)
+          if (doc.post) {
+            try {
+              const postId = typeof doc.post === "string" ? doc.post : doc.post.id;
+              const post = await req.payload.findByID({
                 collection: "posts",
                 id: postId,
-                data: {
-                  commentsCount: ((post.commentsCount as number) || 0) + 1,
-                },
               });
+
+              if (post) {
+                await req.payload.update({
+                  collection: "posts",
+                  id: postId,
+                  data: {
+                    commentsCount: ((post.commentsCount as number) || 0) + 1,
+                  },
+                });
+              }
+            } catch (error) {
+              console.error("[Comments] Error updating post comment count:", error);
             }
-          } catch (error) {
-            console.error("[Comments] Error updating post comment count:", error);
+          }
+          
+          // Update story's comment count on create (for story comments)
+          if (doc.story) {
+            try {
+              const storyId = typeof doc.story === "string" ? doc.story : doc.story.id;
+              // Stories don't have commentsCount field, but we could add it
+              // For now, just log that the comment was added
+              console.log("[Comments] Story comment created for story:", storyId);
+            } catch (error) {
+              console.error("[Comments] Error processing story comment:", error);
+            }
           }
         }
         return doc;
@@ -73,16 +87,30 @@ export const Comments: CollectionConfig = {
       },
     },
 
-    // Post relationship
+    // Post relationship (for post comments)
     {
       name: "post",
       type: "relationship",
       relationTo: "posts",
-      required: true,
+      required: false, // Not required - can be story comment instead
       hasMany: false,
       index: true,
       admin: {
         position: "sidebar",
+      },
+    },
+    
+    // Story relationship (for story comments)
+    {
+      name: "story",
+      type: "relationship",
+      relationTo: "stories",
+      required: false, // Not required - can be post comment instead
+      hasMany: false,
+      index: true,
+      admin: {
+        position: "sidebar",
+        description: "Story this comment belongs to (if story comment)",
       },
     },
 

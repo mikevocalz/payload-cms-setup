@@ -197,6 +197,9 @@ export interface User {
   followersCount?: number | null;
   followingCount?: number | null;
   postsCount?: number | null;
+  likedPosts?: (number | Post)[] | null;
+  likedComments?: (number | Comment)[] | null;
+  bookmarkedPosts?: (number | Post)[] | null;
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -276,6 +279,77 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  author?: (number | null) | User;
+  /**
+   * External user ID from Better Auth
+   */
+  externalAuthorId?: string | null;
+  content?: string | null;
+  location?: string | null;
+  media?:
+    | {
+        type?: ('image' | 'video') | null;
+        /**
+         * External URL for media
+         */
+        url?: string | null;
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  likesCount?: number | null;
+  commentsCount?: number | null;
+  repostsCount?: number | null;
+  bookmarksCount?: number | null;
+  isRepost?: boolean | null;
+  originalPost?: (number | null) | Post;
+  replyTo?: (number | null) | Post;
+  visibility?: ('public' | 'followers' | 'private') | null;
+  hashtags?: (number | Hashtag)[] | null;
+  editedAt?: string | null;
+  moderationStatus?: ('pending' | 'approved' | 'rejected') | null;
+  /**
+   * Mark this post as Not Safe For Work (adult content)
+   */
+  isNsfw?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hashtags".
+ */
+export interface Hashtag {
+  id: number;
+  tag: string;
+  usageCount?: number | null;
+  blocked?: boolean | null;
+  trending?: boolean | null;
+  trendingScore?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  author: number | User;
+  post: number | Post;
+  /**
+   * Comment text (max 1000 characters)
+   */
+  content: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "profiles".
  */
 export interface Profile {
@@ -339,58 +413,6 @@ export interface Block {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
- */
-export interface Post {
-  id: number;
-  author?: (number | null) | User;
-  /**
-   * External user ID from Better Auth
-   */
-  externalAuthorId?: string | null;
-  content?: string | null;
-  location?: string | null;
-  media?:
-    | {
-        type?: ('image' | 'video') | null;
-        /**
-         * External URL for media
-         */
-        url?: string | null;
-        image?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  likesCount?: number | null;
-  commentsCount?: number | null;
-  repostsCount?: number | null;
-  bookmarksCount?: number | null;
-  isRepost?: boolean | null;
-  originalPost?: (number | null) | Post;
-  replyTo?: (number | null) | Post;
-  visibility?: ('public' | 'followers' | 'private') | null;
-  hashtags?: (number | Hashtag)[] | null;
-  editedAt?: string | null;
-  moderationStatus?: ('pending' | 'approved' | 'rejected') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "hashtags".
- */
-export interface Hashtag {
-  id: number;
-  tag: string;
-  usageCount?: number | null;
-  blocked?: boolean | null;
-  trending?: boolean | null;
-  trendingScore?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stories".
  */
 export interface Story {
@@ -430,28 +452,6 @@ export interface Story {
   expiresAt: string;
   createdAt: string;
   viewCount?: number | null;
-  moderationStatus?: ('pending' | 'approved' | 'rejected') | null;
-  updatedAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "comments".
- */
-export interface Comment {
-  id: number;
-  author: number | User;
-  post: number | Post;
-  content: string;
-  likesCount?: number | null;
-  /**
-   * Only set this when replying to another comment. Comments can only be two levels deep.
-   */
-  parentComment?: (number | null) | Comment;
-  /**
-   * Virtual field showing replies to this comment (populated via API).
-   */
-  replies?: (number | Comment)[] | null;
-  createdAt: string;
   moderationStatus?: ('pending' | 'approved' | 'rejected') | null;
   updatedAt: string;
 }
@@ -1218,6 +1218,9 @@ export interface UsersSelect<T extends boolean = true> {
   followersCount?: T;
   followingCount?: T;
   postsCount?: T;
+  likedPosts?: T;
+  likedComments?: T;
+  bookmarkedPosts?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
@@ -1323,6 +1326,7 @@ export interface PostsSelect<T extends boolean = true> {
   hashtags?: T;
   editedAt?: T;
   moderationStatus?: T;
+  isNsfw?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1429,12 +1433,8 @@ export interface CommentsSelect<T extends boolean = true> {
   author?: T;
   post?: T;
   content?: T;
-  likesCount?: T;
-  parentComment?: T;
-  replies?: T;
-  createdAt?: T;
-  moderationStatus?: T;
   updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

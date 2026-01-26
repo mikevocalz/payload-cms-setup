@@ -6,29 +6,26 @@ export const Messages: CollectionConfig = {
     defaultColumns: ["sender", "conversation", "content", "createdAt"],
   },
   access: {
-    // Allow read access when authenticated via API key or JWT
-    // The API route handles user-specific filtering
-    read: ({ req }) => {
-      // If using API key authentication (req.user is set via API key), allow read
-      // The API route will filter messages by conversation
-      if (req.user) {
-        return {
-          "conversation.participants": {
-            contains: req.user.id,
-          },
-        };
-      }
-      // Allow API key access for server-side operations
-      return true;
-    },
+    // Allow read access - API route handles user-specific filtering
+    // API key auth doesn't populate req.user, so we allow read and let API route filter
+    read: () => true,
+    // Allow create - API route validates sender
     create: () => true,
+    // Allow update for own messages or via API key
     update: ({ req }) => {
-      if (req.user) {
-        return {
-          sender: { equals: req.user.id },
-        };
-      }
-      return true;
+      // API key auth (server-side) - allow, API route validates
+      if (!req.user) return true;
+      // JWT auth - only own messages
+      return {
+        sender: { equals: req.user.id },
+      };
+    },
+    // Only allow delete for own messages
+    delete: ({ req }) => {
+      if (!req.user) return true;
+      return {
+        sender: { equals: req.user.id },
+      };
     },
   },
   fields: [

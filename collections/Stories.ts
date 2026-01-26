@@ -4,18 +4,36 @@ export const Stories: CollectionConfig = {
   slug: "stories",
   admin: {
     useAsTitle: "author",
+    defaultColumns: ["author", "createdAt", "visibility", "moderationStatus"],
+    group: "Content",
   },
   access: {
     read: () => true,
     create: () => true,
+    update: ({ req }) => {
+      // API key auth (no req.user) can update any story
+      if (!req.user) return true;
+      // Users can only update their own stories
+      return { author: { equals: req.user.id } };
+    },
+    delete: ({ req }) => {
+      // API key auth can delete any story
+      if (!req.user) return true;
+      // Users can only delete their own stories
+      return { author: { equals: req.user.id } };
+    },
   },
   fields: [
     {
       name: "author",
       type: "relationship",
       relationTo: "users",
-      required: false,
+      required: true, // Author is required
       index: true,
+      admin: {
+        position: "sidebar",
+        description: "The user who created this story",
+      },
     },
     {
       name: "externalAuthorId",
