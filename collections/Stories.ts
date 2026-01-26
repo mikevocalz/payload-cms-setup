@@ -137,15 +137,6 @@ export const Stories: CollectionConfig = {
       },
     },
     {
-      name: "viewersCount",
-      type: "number",
-      defaultValue: 0,
-      admin: {
-        readOnly: true,
-        description: "Number of unique viewers",
-      },
-    },
-    {
       name: "moderationStatus",
       type: "select",
       options: [
