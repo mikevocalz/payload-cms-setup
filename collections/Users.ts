@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -27,7 +27,7 @@ export const Users: CollectionConfig = {
     delete: ({ req }) => {
       if (!req.user) return true; // API key auth
       // Check if user is admin
-      return req.user.role === 'Admin' || req.user.role === 'Super-Admin';
+      return req.user.role === "Admin" || req.user.role === "Super-Admin";
     },
   },
   hooks: {
@@ -40,15 +40,15 @@ export const Users: CollectionConfig = {
             where: { email: { equals: data.email.toLowerCase() } },
             limit: 1,
           });
-          
+
           if (existingUser.docs.length > 0) {
             throw new Error("An account with this email already exists");
           }
-          
+
           // Normalize email to lowercase
           data.email = data.email.toLowerCase();
         }
-        
+
         // Check for duplicate username on create
         if (operation === "create" && data?.username) {
           const existingUsername = await req.payload.find({
@@ -56,15 +56,15 @@ export const Users: CollectionConfig = {
             where: { username: { equals: data.username.toLowerCase() } },
             limit: 1,
           });
-          
+
           if (existingUsername.docs.length > 0) {
             throw new Error("This username is already taken");
           }
-          
+
           // Normalize username to lowercase
           data.username = data.username.toLowerCase();
         }
-        
+
         return data;
       },
     ],
@@ -140,20 +140,29 @@ export const Users: CollectionConfig = {
     },
     {
       name: "pronouns",
-      type:"select",
-      options:[
+      type: "select",
+      options: [
         { label: "He/Him", value: "He/Him" },
         { label: "She/Her", value: "She/Her" },
         { label: "They/Them", value: "They/Them" },
         { label: "He/They", value: "He/They" },
         { label: "She/They", value: "She/They" },
         { label: "Other", value: "Other" },
-      ]
+      ],
     },
     {
       name: "location",
       type: "text",
       maxLength: 100,
+    },
+    {
+      name: "isPrivate",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        position: "sidebar",
+        description: "Private accounts require follow approval",
+      },
     },
     {
       name: "verified",
@@ -229,4 +238,4 @@ export const Users: CollectionConfig = {
       },
     },
   ],
-}
+};

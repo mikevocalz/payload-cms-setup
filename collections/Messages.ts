@@ -97,6 +97,15 @@ export const Messages: CollectionConfig = {
       type: "date",
       index: true,
     },
+    {
+      name: "story",
+      type: "relationship",
+      relationTo: "stories",
+      index: true,
+      admin: {
+        description: "Story this message is replying to (if story reply)",
+      },
+    },
   ],
   hooks: {
     afterChange: [

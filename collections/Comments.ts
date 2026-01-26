@@ -105,31 +105,29 @@ export const Comments: CollectionConfig = {
       },
     },
 
-    // NOTE: Parent field removed temporarily due to DB migration issue
-    // TODO: Add back after running migrations
-    // {
-    //   name: "parent",
-    //   type: "relationship",
-    //   relationTo: "comments",
-    //   required: false,
-    //   hasMany: false,
-    //   admin: {
-    //     position: "sidebar",
-    //     description: "Parent comment (if this is a reply)",
-    //   },
-    // },
+    // Parent comment for threading (replies)
+    {
+      name: "parent",
+      type: "relationship",
+      relationTo: "comments",
+      hasMany: false,
+      index: true,
+      admin: {
+        position: "sidebar",
+        description: "Parent comment (if this is a reply)",
+      },
+    },
 
-    // NOTE: Likes field removed temporarily due to DB migration issue
-    // TODO: Add back after running migrations
-    // {
-    //   name: "likes",
-    //   type: "number",
-    //   defaultValue: 0,
-    //   admin: {
-    //     position: "sidebar",
-    //     readOnly: true,
-    //   },
-    // },
+    // Likes count
+    {
+      name: "likesCount",
+      type: "number",
+      defaultValue: 0,
+      admin: {
+        position: "sidebar",
+        readOnly: true,
+      },
+    },
   ],
   timestamps: true,
 };
