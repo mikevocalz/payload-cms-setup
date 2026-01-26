@@ -1,7 +1,7 @@
 /**
  * Payload CMS Comments Collection
  *
- * Comments on posts with support for nested replies
+ * Comments on posts only. Story replies use direct messaging (DMs).
  *
  * @see https://payloadcms.com/docs/configuration/collections
  */
@@ -38,7 +38,8 @@ export const Comments: CollectionConfig = {
           // Update post's comment count on create (for post comments)
           if (doc.post) {
             try {
-              const postId = typeof doc.post === "string" ? doc.post : doc.post.id;
+              const postId =
+                typeof doc.post === "string" ? doc.post : doc.post.id;
               const post = await req.payload.findByID({
                 collection: "posts",
                 id: postId,
@@ -54,21 +55,14 @@ export const Comments: CollectionConfig = {
                 });
               }
             } catch (error) {
-              console.error("[Comments] Error updating post comment count:", error);
+              console.error(
+                "[Comments] Error updating post comment count:",
+                error,
+              );
             }
           }
-          
-          // Update story's comment count on create (for story comments)
-          if (doc.story) {
-            try {
-              const storyId = typeof doc.story === "string" ? doc.story : doc.story.id;
-              // Stories don't have commentsCount field, but we could add it
-              // For now, just log that the comment was added
-              console.log("[Comments] Story comment created for story:", storyId);
-            } catch (error) {
-              console.error("[Comments] Error processing story comment:", error);
-            }
-          }
+
+          // Note: Story replies use direct messaging (DMs), not comments
         }
         return doc;
       },
@@ -87,30 +81,16 @@ export const Comments: CollectionConfig = {
       },
     },
 
-    // Post relationship (for post comments)
+    // Post relationship
     {
       name: "post",
       type: "relationship",
       relationTo: "posts",
-      required: false, // Not required - can be story comment instead
+      required: true,
       hasMany: false,
       index: true,
       admin: {
         position: "sidebar",
-      },
-    },
-    
-    // Story relationship (for story comments)
-    {
-      name: "story",
-      type: "relationship",
-      relationTo: "stories",
-      required: false, // Not required - can be post comment instead
-      hasMany: false,
-      index: true,
-      admin: {
-        position: "sidebar",
-        description: "Story this comment belongs to (if story comment)",
       },
     },
 
