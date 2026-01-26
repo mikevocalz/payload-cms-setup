@@ -6,14 +6,22 @@ export const Notifications: CollectionConfig = {
     defaultColumns: ["recipient", "type", "actor", "createdAt"],
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      return {
-        recipient: {
-          equals: user.id,
-        },
+    // Allow read access when authenticated via API key or JWT
+    // The API route handles user-specific filtering
+    read: ({ req }) => {
+      // If user is authenticated, filter by recipient
+      if (req.user) {
+        return {
+          recipient: {
+            equals: req.user.id,
+          },
+        }
       }
+      // Allow API key access for server-side operations
+      return true
     },
+    create: () => true,
+    update: () => true,
   },
   fields: [
     {

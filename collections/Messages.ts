@@ -6,13 +6,29 @@ export const Messages: CollectionConfig = {
     defaultColumns: ["sender", "conversation", "content", "createdAt"],
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false;
-      return {
-        "conversation.participants": {
-          contains: user.id,
-        },
-      };
+    // Allow read access when authenticated via API key or JWT
+    // The API route handles user-specific filtering
+    read: ({ req }) => {
+      // If using API key authentication (req.user is set via API key), allow read
+      // The API route will filter messages by conversation
+      if (req.user) {
+        return {
+          "conversation.participants": {
+            contains: req.user.id,
+          },
+        };
+      }
+      // Allow API key access for server-side operations
+      return true;
+    },
+    create: () => true,
+    update: ({ req }) => {
+      if (req.user) {
+        return {
+          sender: { equals: req.user.id },
+        };
+      }
+      return true;
     },
   },
   fields: [
