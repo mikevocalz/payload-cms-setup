@@ -18,45 +18,57 @@ export const Likes: CollectionConfig = {
 
           // Update post likes count
           if (doc.post) {
-            const post = await payload.findByID({
-              collection: "posts",
-              id: doc.post,
-            });
-            await payload.update({
-              collection: "posts",
-              id: doc.post,
-              data: {
-                likesCount: (post.likesCount || 0) + 1,
-              },
-            });
-
-            // Create notification for post author
-            if (post.author !== doc.user) {
-              await payload.create({
-                collection: "notifications",
+            try {
+              const post = await payload.findByID({
+                collection: "posts",
+                id: doc.post,
+              });
+              await payload.update({
+                collection: "posts",
+                id: doc.post,
                 data: {
-                  recipient: post.author,
-                  sender: doc.user,
-                  type: "like",
-                  post: doc.post,
+                  likesCount: (post.likesCount || 0) + 1,
                 },
               });
+
+              // Create notification for post author
+              if (post.author && post.author !== doc.user) {
+                await payload.create({
+                  collection: "notifications",
+                  data: {
+                    recipient: post.author,
+                    actor: doc.user,
+                    type: "like",
+                    post: doc.post,
+                  },
+                });
+              }
+            } catch (error) {
+              console.error("[Likes] Error updating post likes count:", error);
+              // Don't throw - allow like to succeed even if count update fails
             }
           }
 
           // Update comment likes count
           if (doc.comment) {
-            const comment = await payload.findByID({
-              collection: "comments",
-              id: doc.comment,
-            });
-            await payload.update({
-              collection: "comments",
-              id: doc.comment,
-              data: {
-                likesCount: (comment.likesCount || 0) + 1,
-              },
-            });
+            try {
+              const comment = await payload.findByID({
+                collection: "comments",
+                id: doc.comment,
+              });
+              await payload.update({
+                collection: "comments",
+                id: doc.comment,
+                data: {
+                  likesCount: (comment.likesCount || 0) + 1,
+                },
+              });
+            } catch (error) {
+              console.error(
+                "[Likes] Error updating comment likes count:",
+                error,
+              );
+            }
           }
         }
         return doc;
@@ -68,32 +80,46 @@ export const Likes: CollectionConfig = {
 
         // Update post likes count
         if (doc.post) {
-          const post = await payload.findByID({
-            collection: "posts",
-            id: doc.post,
-          });
-          await payload.update({
-            collection: "posts",
-            id: doc.post,
-            data: {
-              likesCount: Math.max((post.likesCount || 0) - 1, 0),
-            },
-          });
+          try {
+            const post = await payload.findByID({
+              collection: "posts",
+              id: doc.post,
+            });
+            await payload.update({
+              collection: "posts",
+              id: doc.post,
+              data: {
+                likesCount: Math.max((post.likesCount || 0) - 1, 0),
+              },
+            });
+          } catch (error) {
+            console.error(
+              "[Likes] Error decrementing post likes count:",
+              error,
+            );
+          }
         }
 
         // Update comment likes count
         if (doc.comment) {
-          const comment = await payload.findByID({
-            collection: "comments",
-            id: doc.comment,
-          });
-          await payload.update({
-            collection: "comments",
-            id: doc.comment,
-            data: {
-              likesCount: Math.max((comment.likesCount || 0) - 1, 0),
-            },
-          });
+          try {
+            const comment = await payload.findByID({
+              collection: "comments",
+              id: doc.comment,
+            });
+            await payload.update({
+              collection: "comments",
+              id: doc.comment,
+              data: {
+                likesCount: Math.max((comment.likesCount || 0) - 1, 0),
+              },
+            });
+          } catch (error) {
+            console.error(
+              "[Likes] Error decrementing comment likes count:",
+              error,
+            );
+          }
         }
       },
     ],

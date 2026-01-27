@@ -16,6 +16,55 @@ export const Follows: CollectionConfig = {
         if (operation === "create") {
           const { payload } = req;
 
+          try {
+            // Update follower's following count
+            const followerUser = await payload.findByID({
+              collection: "users",
+              id: doc.follower,
+            });
+            await payload.update({
+              collection: "users",
+              id: doc.follower,
+              data: {
+                followingCount: (followerUser.followingCount || 0) + 1,
+              },
+            });
+
+            // Update following's followers count
+            const followingUser = await payload.findByID({
+              collection: "users",
+              id: doc.following,
+            });
+            await payload.update({
+              collection: "users",
+              id: doc.following,
+              data: {
+                followersCount: (followingUser.followersCount || 0) + 1,
+              },
+            });
+
+            // Create notification
+            await payload.create({
+              collection: "notifications",
+              data: {
+                recipient: doc.following,
+                actor: doc.follower,
+                type: "follow",
+              },
+            });
+          } catch (error) {
+            console.error("[Follows] Error in afterChange hook:", error);
+            // Don't throw - allow follow to succeed even if count update fails
+          }
+        }
+        return doc;
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req }) => {
+        const { payload } = req;
+
+        try {
           // Update follower's following count
           const followerUser = await payload.findByID({
             collection: "users",
@@ -25,7 +74,10 @@ export const Follows: CollectionConfig = {
             collection: "users",
             id: doc.follower,
             data: {
-              followingCount: (followerUser.followingCount || 0) + 1,
+              followingCount: Math.max(
+                (followerUser.followingCount || 0) - 1,
+                0,
+              ),
             },
           });
 
@@ -38,55 +90,15 @@ export const Follows: CollectionConfig = {
             collection: "users",
             id: doc.following,
             data: {
-              followersCount: (followingUser.followersCount || 0) + 1,
+              followersCount: Math.max(
+                (followingUser.followersCount || 0) - 1,
+                0,
+              ),
             },
           });
-
-          // Create notification
-          await payload.create({
-            collection: "notifications",
-            data: {
-              recipient: doc.following,
-              sender: doc.follower,
-              type: "follow",
-            },
-          });
+        } catch (error) {
+          console.error("[Follows] Error in afterDelete hook:", error);
         }
-        return doc;
-      },
-    ],
-    afterDelete: [
-      async ({ doc, req }) => {
-        const { payload } = req;
-
-        // Update follower's following count
-        const followerUser = await payload.findByID({
-          collection: "users",
-          id: doc.follower,
-        });
-        await payload.update({
-          collection: "users",
-          id: doc.follower,
-          data: {
-            followingCount: Math.max((followerUser.followingCount || 0) - 1, 0),
-          },
-        });
-
-        // Update following's followers count
-        const followingUser = await payload.findByID({
-          collection: "users",
-          id: doc.following,
-        });
-        await payload.update({
-          collection: "users",
-          id: doc.following,
-          data: {
-            followersCount: Math.max(
-              (followingUser.followersCount || 0) - 1,
-              0,
-            ),
-          },
-        });
       },
     ],
   },
