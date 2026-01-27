@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const Bookmarks: CollectionConfig = {
   slug: "bookmarks",
@@ -7,13 +7,15 @@ export const Bookmarks: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      if (!user) return false
+      if (!user) return false;
       return {
         user: {
           equals: user.id,
         },
-      }
+      };
     },
+    create: () => true,
+    delete: () => true,
   },
   fields: [
     {
@@ -37,4 +39,4 @@ export const Bookmarks: CollectionConfig = {
       unique: true,
     },
   ],
-}
+};

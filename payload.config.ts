@@ -150,6 +150,10 @@ const config = buildConfig({
         process.env.DATABASE_URI ||
         process.env.DATABASE_URL ||
         process.env.POSTGRES_URL,
+      // Limit pool size for serverless (Supabase Session mode has limits)
+      max: 3,
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
     },
     // Note: In production, schema must match via migrations or DB already synced
     // Disable push mode (default) and use migrations or pre-synced DB

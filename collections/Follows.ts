@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const Follows: CollectionConfig = {
   slug: "follows",
@@ -7,38 +7,40 @@ export const Follows: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: () => true,
+    delete: () => true,
   },
   hooks: {
     afterChange: [
       async ({ doc, req, operation }) => {
         if (operation === "create") {
-          const { payload } = req
+          const { payload } = req;
 
           // Update follower's following count
           const followerUser = await payload.findByID({
             collection: "users",
             id: doc.follower,
-          })
+          });
           await payload.update({
             collection: "users",
             id: doc.follower,
             data: {
               followingCount: (followerUser.followingCount || 0) + 1,
             },
-          })
+          });
 
           // Update following's followers count
           const followingUser = await payload.findByID({
             collection: "users",
             id: doc.following,
-          })
+          });
           await payload.update({
             collection: "users",
             id: doc.following,
             data: {
               followersCount: (followingUser.followersCount || 0) + 1,
             },
-          })
+          });
 
           // Create notification
           await payload.create({
@@ -48,40 +50,43 @@ export const Follows: CollectionConfig = {
               sender: doc.follower,
               type: "follow",
             },
-          })
+          });
         }
-        return doc
+        return doc;
       },
     ],
     afterDelete: [
       async ({ doc, req }) => {
-        const { payload } = req
+        const { payload } = req;
 
         // Update follower's following count
         const followerUser = await payload.findByID({
           collection: "users",
           id: doc.follower,
-        })
+        });
         await payload.update({
           collection: "users",
           id: doc.follower,
           data: {
             followingCount: Math.max((followerUser.followingCount || 0) - 1, 0),
           },
-        })
+        });
 
         // Update following's followers count
         const followingUser = await payload.findByID({
           collection: "users",
           id: doc.following,
-        })
+        });
         await payload.update({
           collection: "users",
           id: doc.following,
           data: {
-            followersCount: Math.max((followingUser.followersCount || 0) - 1, 0),
+            followersCount: Math.max(
+              (followingUser.followersCount || 0) - 1,
+              0,
+            ),
           },
-        })
+        });
       },
     ],
   },
@@ -107,4 +112,4 @@ export const Follows: CollectionConfig = {
       unique: true,
     },
   ],
-}
+};
