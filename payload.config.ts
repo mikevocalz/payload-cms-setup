@@ -65,6 +65,13 @@ import { Pages } from "./collections/Pages";
 import { Categories } from "./collections/Categories";
 import { LegalPages } from "./collections/LegalPages";
 
+// Custom Endpoints
+import {
+  followEndpoint,
+  unfollowEndpoint,
+  checkFollowEndpoint,
+} from "./endpoints/follow";
+
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
@@ -143,6 +150,7 @@ const config = buildConfig({
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
+  endpoints: [followEndpoint, unfollowEndpoint, checkFollowEndpoint],
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
