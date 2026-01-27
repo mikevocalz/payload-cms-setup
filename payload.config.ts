@@ -71,6 +71,57 @@ import {
   unfollowEndpoint,
   checkFollowEndpoint,
 } from "./endpoints/follow";
+import {
+  likePostEndpoint,
+  unlikePostEndpoint,
+  likeStateEndpoint,
+  likeCommentEndpoint,
+  unlikeCommentEndpoint,
+} from "./endpoints/likes";
+import {
+  bookmarkPostEndpoint,
+  unbookmarkPostEndpoint,
+  getUserBookmarksEndpoint,
+  checkBookmarkStateEndpoint,
+} from "./endpoints/bookmarks";
+import {
+  getUserProfileEndpoint,
+  updateOwnProfileEndpoint,
+  updateAvatarEndpoint,
+  getUserPostsEndpoint,
+  getFollowStateEndpoint,
+} from "./endpoints/profiles";
+import {
+  createPostEndpoint,
+  getFeedEndpoint,
+  getPostEndpoint,
+  updatePostEndpoint,
+  deletePostEndpoint,
+} from "./endpoints/posts";
+import {
+  createCommentEndpoint,
+  getCommentsEndpoint,
+} from "./endpoints/comments";
+import {
+  createStoryEndpoint,
+  getStoriesEndpoint,
+  viewStoryEndpoint,
+  replyToStoryEndpoint,
+} from "./endpoints/stories";
+import {
+  createDirectConversationEndpoint,
+  createGroupConversationEndpoint,
+  getConversationsEndpoint,
+  getMessagesEndpoint,
+  sendMessageEndpoint,
+  markConversationReadEndpoint,
+} from "./endpoints/messaging";
+import {
+  getNotificationsEndpoint,
+  markNotificationReadEndpoint,
+  registerDeviceEndpoint,
+  getBadgesEndpoint,
+} from "./endpoints/notifications";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -150,7 +201,55 @@ const config = buildConfig({
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
-  endpoints: [followEndpoint, unfollowEndpoint, checkFollowEndpoint],
+  endpoints: [
+    // Follow
+    followEndpoint,
+    unfollowEndpoint,
+    checkFollowEndpoint,
+    // Likes
+    likePostEndpoint,
+    unlikePostEndpoint,
+    likeStateEndpoint,
+    likeCommentEndpoint,
+    unlikeCommentEndpoint,
+    // Bookmarks
+    bookmarkPostEndpoint,
+    unbookmarkPostEndpoint,
+    getUserBookmarksEndpoint,
+    checkBookmarkStateEndpoint,
+    // Profiles
+    getUserProfileEndpoint,
+    updateOwnProfileEndpoint,
+    updateAvatarEndpoint,
+    getUserPostsEndpoint,
+    getFollowStateEndpoint,
+    // Posts
+    createPostEndpoint,
+    getFeedEndpoint,
+    getPostEndpoint,
+    updatePostEndpoint,
+    deletePostEndpoint,
+    // Comments
+    createCommentEndpoint,
+    getCommentsEndpoint,
+    // Stories
+    createStoryEndpoint,
+    getStoriesEndpoint,
+    viewStoryEndpoint,
+    replyToStoryEndpoint,
+    // Messaging
+    createDirectConversationEndpoint,
+    createGroupConversationEndpoint,
+    getConversationsEndpoint,
+    getMessagesEndpoint,
+    sendMessageEndpoint,
+    markConversationReadEndpoint,
+    // Notifications & Badges
+    getNotificationsEndpoint,
+    markNotificationReadEndpoint,
+    registerDeviceEndpoint,
+    getBadgesEndpoint,
+  ],
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
