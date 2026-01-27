@@ -9,6 +9,16 @@ export const Posts: CollectionConfig = {
   access: {
     read: () => true,
     create: () => true,
+    // Only author can update their own posts (for caption editing)
+    update: ({ req }) => {
+      if (!req.user) return true; // API key auth
+      return { author: { equals: req.user.id } };
+    },
+    // Only author can delete their own posts
+    delete: ({ req }) => {
+      if (!req.user) return true; // API key auth
+      return { author: { equals: req.user.id } };
+    },
   },
   hooks: {
     afterChange: [
@@ -216,7 +226,7 @@ export const Posts: CollectionConfig = {
       },
     },
     {
-      name: "isNsfw",  // Fixed: was isNSFW which maps to is_n_s_f_w, but DB has is_nsfw
+      name: "isNsfw", // Fixed: was isNSFW which maps to is_n_s_f_w, but DB has is_nsfw
       type: "checkbox",
       defaultValue: false,
       admin: {
