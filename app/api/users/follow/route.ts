@@ -1,6 +1,6 @@
 /**
  * Follow/Unfollow API Route (Next.js App Router)
- * 
+ *
  * POST /api/users/follow - Follow a user
  * DELETE /api/users/follow - Unfollow a user
  * GET /api/users/follow - Check follow state
@@ -14,13 +14,13 @@ async function getUser(req: Request) {
   const payload = await getPayload({ config });
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
-  
+
   if (!authHeader?.startsWith("JWT ")) {
     return null;
   }
-  
+
   const token = authHeader.slice(4);
-  
+
   try {
     const { user } = await payload.auth({ headers: headersList });
     return user;
@@ -31,7 +31,7 @@ async function getUser(req: Request) {
 
 export async function POST(req: Request) {
   console.log("[API/follow] POST request received");
-  
+
   const user = await getUser(req);
   if (!user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,13 +49,18 @@ export async function POST(req: Request) {
     return Response.json({ error: "followingId required" }, { status: 400 });
   }
 
-  const followerId = String(user.id);
-  const targetId = String(followingId);
+  // CRITICAL: Payload requires integer IDs for relationship fields
+  const followerId = Number(user.id);
+  const targetId = Number(followingId);
+
+  if (isNaN(followerId) || isNaN(targetId)) {
+    return Response.json({ error: "Invalid user ID" }, { status: 400 });
+  }
 
   if (followerId === targetId) {
     return Response.json(
       { error: "Cannot follow yourself", code: "SELF_FOLLOW_FORBIDDEN" },
-      { status: 409 }
+      { status: 409 },
     );
   }
 
@@ -68,7 +73,7 @@ export async function POST(req: Request) {
       data: {
         follower: followerId,
         following: targetId,
-      } as any,
+      },
     });
 
     const targetUser = await payload.findByID({
@@ -99,14 +104,14 @@ export async function POST(req: Request) {
     console.error("[API/follow] Error:", err);
     return Response.json(
       { error: err.message || "Internal server error" },
-      { status: err.status || 500 }
+      { status: err.status || 500 },
     );
   }
 }
 
 export async function DELETE(req: Request) {
   console.log("[API/follow] DELETE request received");
-  
+
   const user = await getUser(req);
   if (!user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -124,8 +129,13 @@ export async function DELETE(req: Request) {
     return Response.json({ error: "followingId required" }, { status: 400 });
   }
 
-  const followerId = String(user.id);
-  const targetId = String(followingId);
+  // CRITICAL: Payload requires integer IDs for relationship fields
+  const followerId = Number(user.id);
+  const targetId = Number(followingId);
+
+  if (isNaN(followerId) || isNaN(targetId)) {
+    return Response.json({ error: "Invalid user ID" }, { status: 400 });
+  }
 
   const payload = await getPayload({ config });
 
@@ -171,7 +181,7 @@ export async function DELETE(req: Request) {
     console.error("[API/follow] Error:", err);
     return Response.json(
       { error: err.message || "Internal server error" },
-      { status: err.status || 500 }
+      { status: err.status || 500 },
     );
   }
 }
@@ -186,11 +196,19 @@ export async function GET(req: Request) {
   const userId = url.searchParams.get("userId");
 
   if (!userId) {
-    return Response.json({ error: "userId query parameter required" }, { status: 400 });
+    return Response.json(
+      { error: "userId query parameter required" },
+      { status: 400 },
+    );
   }
 
-  const followerId = String(user.id);
-  const targetId = String(userId);
+  // CRITICAL: Payload requires integer IDs for relationship fields
+  const followerId = Number(user.id);
+  const targetId = Number(userId);
+
+  if (isNaN(followerId) || isNaN(targetId)) {
+    return Response.json({ error: "Invalid user ID" }, { status: 400 });
+  }
 
   const payload = await getPayload({ config });
 
@@ -211,7 +229,7 @@ export async function GET(req: Request) {
     console.error("[API/follow] GET error:", err);
     return Response.json(
       { error: err.message || "Internal server error" },
-      { status: err.status || 500 }
+      { status: err.status || 500 },
     );
   }
 }
