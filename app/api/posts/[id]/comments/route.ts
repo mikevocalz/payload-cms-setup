@@ -20,7 +20,9 @@ async function getCurrentUser(payload: any, authHeader: string | null) {
   const token = authHeader.replace("JWT ", "");
 
   try {
-    const { user } = await payload.auth({ headers: { authorization: `JWT ${token}` } });
+    const { user } = await payload.auth({
+      headers: { authorization: `JWT ${token}` },
+    });
     return user;
   } catch (error) {
     console.error("[API/posts/comments] Auth error:", error);
@@ -30,7 +32,7 @@ async function getCurrentUser(payload: any, authHeader: string | null) {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: postId } = await params;
   console.log("[API/posts/comments] GET request for post:", postId);
@@ -57,30 +59,50 @@ export async function GET(
     }
 
     // Get comments for this post
-    const comments = await payload.find({
-      collection: "comments",
-      where: {
-        post: { equals: postId },
-      },
-      sort: "-createdAt",
-      page,
-      limit,
-      depth: 2,
-    });
+    // Use depth: 1 to avoid deep joins that may fail if columns are missing
+    let comments;
+    try {
+      comments = await payload.find({
+        collection: "comments",
+        where: {
+          post: { equals: postId },
+        },
+        sort: "-createdAt",
+        page,
+        limit,
+        depth: 1,
+      });
+    } catch (queryError: any) {
+      console.error(
+        "[API/posts/comments] Query error, trying minimal query:",
+        queryError.message,
+      );
+      // Fallback: minimal query without depth
+      comments = await payload.find({
+        collection: "comments",
+        where: {
+          post: { equals: postId },
+        },
+        sort: "-createdAt",
+        page,
+        limit,
+        depth: 0,
+      });
+    }
 
     return Response.json(comments);
   } catch (error: any) {
     console.error("[API/posts/comments] GET error:", error);
     return Response.json(
       { error: error.message || "Internal server error" },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
     );
   }
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: postId } = await params;
   console.log("[API/posts/comments] POST request for post:", postId);
@@ -104,7 +126,11 @@ export async function POST(
 
     const { content, parentId, clientMutationId } = body;
 
-    if (!content || typeof content !== "string" || content.trim().length === 0) {
+    if (
+      !content ||
+      typeof content !== "string" ||
+      content.trim().length === 0
+    ) {
       return Response.json({ error: "Content is required" }, { status: 400 });
     }
 
@@ -144,7 +170,9 @@ export async function POST(
         const lastCreated = new Date(lastComment.createdAt).getTime();
         const now = Date.now();
         if (now - lastCreated < 5000) {
-          console.log("[API/posts/comments] Duplicate detected, returning existing");
+          console.log(
+            "[API/posts/comments] Duplicate detected, returning existing",
+          );
           return Response.json({
             message: "Comment already exists",
             comment: lastComment,
@@ -184,15 +212,18 @@ export async function POST(
 
     console.log("[API/posts/comments] Comment created:", newComment.id);
 
-    return Response.json({
-      message: "Comment created successfully",
-      comment: newComment,
-    }, { status: 201 });
+    return Response.json(
+      {
+        message: "Comment created successfully",
+        comment: newComment,
+      },
+      { status: 201 },
+    );
   } catch (error: any) {
     console.error("[API/posts/comments] POST error:", error);
     return Response.json(
       { error: error.message || "Internal server error" },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
     );
   }
 }
