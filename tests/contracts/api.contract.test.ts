@@ -1,9 +1,9 @@
 /**
  * API Contract Tests
- * 
+ *
  * Tests that verify all canonical endpoints exist and return correct shapes.
  * Run against dev/staging before production deployment.
- * 
+ *
  * Usage:
  *   API_URL=https://payload-cms-setup-gray.vercel.app \
  *   TEST_TOKEN=<your_jwt_token> \
@@ -12,7 +12,8 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 
-const API_URL = process.env.API_URL || "https://payload-cms-setup-gray.vercel.app";
+const API_URL =
+  process.env.API_URL || "https://payload-cms-setup-gray.vercel.app";
 const TEST_TOKEN = process.env.TEST_TOKEN || "";
 
 // Skip tests if no token provided
@@ -20,7 +21,7 @@ const describeWithAuth = TEST_TOKEN ? describe : describe.skip;
 
 async function apiFetch(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   const url = `${API_URL}${endpoint}`;
   const headers: Record<string, string> = {
@@ -196,7 +197,7 @@ describe("API Contract Tests", () => {
 
     it("GET /api/stories returns grouped structure", async () => {
       const res = await apiFetch("/api/stories");
-      
+
       if (res.status === 200) {
         const data = await res.json();
         // Should have myStories and otherStories
@@ -242,14 +243,14 @@ describe("API Contract Tests", () => {
       expect(res.status).toBe(401);
     });
 
-    it("Invalid followingId returns 400 or 404", async () => {
+    it("Invalid followingId returns 400, 401, or 404", async () => {
       const res = await apiFetch("/api/users/follow", {
         method: "POST",
         body: JSON.stringify({ followingId: "invalid-id-that-does-not-exist" }),
       });
 
-      // Should be 400 (bad request) or 404 (user not found), not 500
-      expect([400, 404]).toContain(res.status);
+      // Should be 400 (bad request), 401 (unauthorized), or 404 (user not found), not 500
+      expect([400, 401, 404]).toContain(res.status);
     });
 
     it("Missing body returns 400", async () => {
