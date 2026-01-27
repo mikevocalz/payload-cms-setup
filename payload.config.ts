@@ -34,6 +34,7 @@ import { Messages } from "./collections/Messages";
 
 // Realtime Notifications
 import { Notifications } from "./collections/Notifications";
+import { UserDevices } from "./collections/UserDevices";
 
 // Moderation & Safety
 import { Reports } from "./collections/Reports";
@@ -117,6 +118,7 @@ const config = buildConfig({
     Messages,
     // Realtime Notifications
     Notifications,
+    UserDevices,
     // Moderation & Safety
     Reports,
     ModerationActions,

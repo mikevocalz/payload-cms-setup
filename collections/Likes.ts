@@ -75,6 +75,7 @@ export const Likes: CollectionConfig = {
               const post = await payload.findByID({
                 collection: "posts",
                 id: doc.post,
+                depth: 0,
               });
               await payload.update({
                 collection: "posts",
@@ -85,16 +86,31 @@ export const Likes: CollectionConfig = {
               });
 
               // Create notification for post author
-              if (post.author && post.author !== doc.user) {
-                await payload.create({
-                  collection: "notifications",
-                  data: {
-                    recipient: post.author,
-                    actor: doc.user,
-                    type: "like",
-                    post: doc.post,
-                  },
-                });
+              const authorId =
+                typeof post.author === "object"
+                  ? (post.author as any).id
+                  : post.author;
+              if (authorId && String(authorId) !== String(doc.user)) {
+                try {
+                  await payload.create({
+                    collection: "notifications",
+                    data: {
+                      recipient: authorId,
+                      actor: doc.user,
+                      type: "like",
+                      entityType: "post",
+                      entityId: String(doc.post),
+                    },
+                  });
+                } catch (notifError: any) {
+                  // 400 = self-notification prevented, which is fine
+                  if (notifError.status !== 400) {
+                    console.error(
+                      "[Likes] Error creating notification:",
+                      notifError,
+                    );
+                  }
+                }
               }
             } catch (error) {
               console.error("[Likes] Error updating post likes count:", error);

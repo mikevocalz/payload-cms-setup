@@ -1,27 +1,78 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const Notifications: CollectionConfig = {
   slug: "notifications",
   admin: {
-    defaultColumns: ["recipient", "type", "actor", "createdAt"],
+    defaultColumns: ["recipient", "type", "actor", "text", "createdAt"],
   },
   access: {
-    // Allow read access when authenticated via API key or JWT
-    // The API route handles user-specific filtering
+    // STRICT: Only recipient can read their notifications
     read: ({ req }) => {
-      // If user is authenticated, filter by recipient
       if (req.user) {
         return {
-          recipient: {
-            equals: req.user.id,
-          },
-        }
+          recipient: { equals: req.user.id },
+        };
       }
       // Allow API key access for server-side operations
-      return true
+      return true;
     },
+    // Allow create via hooks/API
     create: () => true,
-    update: () => true,
+    // Only recipient can update (mark as read)
+    update: ({ req }) => {
+      if (req.user) {
+        return {
+          recipient: { equals: req.user.id },
+        };
+      }
+      return true; // API key
+    },
+    // Only recipient can delete
+    delete: ({ req }) => {
+      if (req.user) {
+        return {
+          recipient: { equals: req.user.id },
+        };
+      }
+      return true; // API key
+    },
+  },
+  hooks: {
+    // Basic validation - deduplication requires DB migration for dedupeKey column
+    beforeChange: [
+      async ({ data, operation }) => {
+        if (operation === "create") {
+          // INVARIANT 1: Recipient is required
+          if (!data?.recipient) {
+            const error = new Error("Notification recipient is required");
+            (error as any).status = 400;
+            throw error;
+          }
+
+          // INVARIANT 2: Actor cannot be recipient (except for system notifications)
+          if (
+            data.type !== "system" &&
+            data.actor &&
+            String(data.actor) === String(data.recipient)
+          ) {
+            console.log(
+              "[Notifications] Skipping self-notification:",
+              data.type,
+            );
+            const error = new Error("Cannot notify yourself");
+            (error as any).status = 400;
+            throw error;
+          }
+
+          console.log("[Notifications] Creating:", {
+            type: data.type,
+            recipient: data.recipient,
+          });
+        }
+
+        return data;
+      },
+    ],
   },
   fields: [
     {
@@ -30,6 +81,11 @@ export const Notifications: CollectionConfig = {
       relationTo: "users",
       required: true,
       index: true,
+    },
+    {
+      name: "actor",
+      type: "relationship",
+      relationTo: "users",
     },
     {
       name: "type",
@@ -44,11 +100,6 @@ export const Notifications: CollectionConfig = {
         { label: "System", value: "system" },
       ],
       index: true,
-    },
-    {
-      name: "actor",
-      type: "relationship",
-      relationTo: "users",
     },
     {
       name: "entityType",
@@ -80,5 +131,32 @@ export const Notifications: CollectionConfig = {
       type: "date",
       index: true,
     },
+    // NOTE: New fields below require DB migration before uncommenting
+    // {
+    //   name: "dedupeKey",
+    //   type: "text",
+    //   unique: true,
+    //   index: true,
+    // },
+    // {
+    //   name: "text",
+    //   type: "text",
+    //   maxLength: 200,
+    // },
+    // {
+    //   name: "conversationId",
+    //   type: "text",
+    //   index: true,
+    // },
+    // {
+    //   name: "pushStatus",
+    //   type: "select",
+    //   options: ["pending", "sent", "failed", "skipped"],
+    //   defaultValue: "pending",
+    // },
+    // {
+    //   name: "pushError",
+    //   type: "text",
+    // },
   ],
-}
+};

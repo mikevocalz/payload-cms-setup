@@ -84,6 +84,7 @@ export interface Config {
     conversations: Conversation;
     messages: Message;
     notifications: Notification;
+    'user-devices': UserDevice;
     reports: Report;
     moderationActions: ModerationAction;
     contentFlags: ContentFlag;
@@ -123,6 +124,7 @@ export interface Config {
     conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    'user-devices': UserDevicesSelect<false> | UserDevicesSelect<true>;
     reports: ReportsSelect<false> | ReportsSelect<true>;
     moderationActions: ModerationActionsSelect<false> | ModerationActionsSelect<true>;
     contentFlags: ContentFlagsSelect<false> | ContentFlagsSelect<true>;
@@ -345,6 +347,11 @@ export interface Comment {
    * Comment text (max 1000 characters)
    */
   content: string;
+  /**
+   * Parent comment (if this is a reply - max 2 levels)
+   */
+  parent?: (number | null) | Comment;
+  likesCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -417,7 +424,10 @@ export interface Block {
  */
 export interface Story {
   id: number;
-  author?: (number | null) | User;
+  /**
+   * The user who created this story
+   */
+  author: number | User;
   /**
    * External user ID from Better Auth
    */
@@ -526,7 +536,7 @@ export interface Message {
   id: number;
   conversation: number | Conversation;
   sender: number | User;
-  content: string;
+  content?: string | null;
   /**
    * Media attachments (uploaded to CDN)
    */
@@ -542,6 +552,13 @@ export interface Message {
     | null;
   mentions?: (number | User)[] | null;
   createdAt: string;
+  /**
+   * Users who have read this message (for group chats)
+   */
+  readBy?: (number | User)[] | null;
+  /**
+   * Legacy: When message was read (use readBy for groups)
+   */
   readAt?: string | null;
   updatedAt: string;
 }
@@ -552,12 +569,39 @@ export interface Message {
 export interface Notification {
   id: number;
   recipient: number | User;
-  type: 'follow' | 'like' | 'comment' | 'mention' | 'tag' | 'system';
   actor?: (number | null) | User;
+  type: 'follow' | 'like' | 'comment' | 'mention' | 'tag' | 'system';
   entityType?: ('post' | 'comment' | 'story' | 'user' | 'message') | null;
   entityId?: string | null;
   createdAt: string;
   readAt?: string | null;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-devices".
+ */
+export interface UserDevice {
+  id: number;
+  user: number | User;
+  /**
+   * Expo push token (ExponentPushToken[...])
+   */
+  expoPushToken: string;
+  /**
+   * Unique device identifier
+   */
+  deviceId: string;
+  platform: 'ios' | 'android';
+  /**
+   * Last time this device was active
+   */
+  lastSeenAt?: string | null;
+  /**
+   * When push was disabled for this device (token invalid, etc.)
+   */
+  disabledAt?: string | null;
+  createdAt: string;
   updatedAt: string;
 }
 /**
@@ -1097,6 +1141,10 @@ export interface PayloadLockedDocument {
         value: number | Notification;
       } | null)
     | ({
+        relationTo: 'user-devices';
+        value: number | UserDevice;
+      } | null)
+    | ({
         relationTo: 'reports';
         value: number | Report;
       } | null)
@@ -1433,6 +1481,8 @@ export interface CommentsSelect<T extends boolean = true> {
   author?: T;
   post?: T;
   content?: T;
+  parent?: T;
+  likesCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1524,6 +1574,7 @@ export interface MessagesSelect<T extends boolean = true> {
       };
   mentions?: T;
   createdAt?: T;
+  readBy?: T;
   readAt?: T;
   updatedAt?: T;
 }
@@ -1533,12 +1584,26 @@ export interface MessagesSelect<T extends boolean = true> {
  */
 export interface NotificationsSelect<T extends boolean = true> {
   recipient?: T;
-  type?: T;
   actor?: T;
+  type?: T;
   entityType?: T;
   entityId?: T;
   createdAt?: T;
   readAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-devices_select".
+ */
+export interface UserDevicesSelect<T extends boolean = true> {
+  user?: T;
+  expoPushToken?: T;
+  deviceId?: T;
+  platform?: T;
+  lastSeenAt?: T;
+  disabledAt?: T;
+  createdAt?: T;
   updatedAt?: T;
 }
 /**
