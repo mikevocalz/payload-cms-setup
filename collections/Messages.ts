@@ -102,15 +102,27 @@ export const Messages: CollectionConfig = {
     afterChange: [
       async ({ doc, req, operation }) => {
         if (operation === "create") {
-          const { payload } = req;
-          // Update conversation's lastMessageAt
-          await payload.update({
-            collection: "conversations",
-            id: doc.conversation,
-            data: {
-              lastMessageAt: new Date().toISOString(),
-            },
-          });
+          try {
+            const { payload } = req;
+            // Update conversation's lastMessageAt
+            const conversationId =
+              typeof doc.conversation === "object"
+                ? doc.conversation.id
+                : doc.conversation;
+            await payload.update({
+              collection: "conversations",
+              id: conversationId,
+              data: {
+                lastMessageAt: new Date().toISOString(),
+              },
+            });
+          } catch (error) {
+            console.error(
+              "[Messages] Error updating conversation lastMessageAt:",
+              error,
+            );
+            // Don't throw - allow message to succeed
+          }
         }
         return doc;
       },
