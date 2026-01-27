@@ -11,6 +11,59 @@ export const Likes: CollectionConfig = {
     delete: () => true,
   },
   hooks: {
+    // CRITICAL: Prevent duplicate likes at application layer
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        if (operation === "create") {
+          const { payload } = req;
+
+          // Check for existing like (user + post combination)
+          if (data.post && data.user) {
+            const existingLike = await payload.find({
+              collection: "likes",
+              where: {
+                and: [
+                  { user: { equals: data.user } },
+                  { post: { equals: data.post } },
+                ],
+              },
+              limit: 1,
+            });
+
+            if (existingLike.docs.length > 0) {
+              console.log("[Likes] Duplicate like prevented:", {
+                user: data.user,
+                post: data.post,
+              });
+              throw new Error("User has already liked this post");
+            }
+          }
+
+          // Check for existing like (user + comment combination)
+          if (data.comment && data.user) {
+            const existingLike = await payload.find({
+              collection: "likes",
+              where: {
+                and: [
+                  { user: { equals: data.user } },
+                  { comment: { equals: data.comment } },
+                ],
+              },
+              limit: 1,
+            });
+
+            if (existingLike.docs.length > 0) {
+              console.log("[Likes] Duplicate comment like prevented:", {
+                user: data.user,
+                comment: data.comment,
+              });
+              throw new Error("User has already liked this comment");
+            }
+          }
+        }
+        return data;
+      },
+    ],
     afterChange: [
       async ({ doc, req, operation }) => {
         if (operation === "create") {
