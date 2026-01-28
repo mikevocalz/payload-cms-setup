@@ -1,6 +1,6 @@
 /**
  * Profile Endpoints for Payload v3
- * 
+ *
  * GET /api/users/:id/profile - Get user profile (public, safe shape)
  * PATCH /api/users/me - Update own profile
  * POST /api/users/me/avatar - Update avatar
@@ -32,19 +32,29 @@ export const getUserProfileEndpoint: Endpoint = {
         return Response.json({ error: "User not found" }, { status: 404 });
       }
 
-      // Return safe public shape
+      // Get avatar URL from relationship if populated
+      let avatarUrl = null;
+      if (user.avatar) {
+        if (typeof user.avatar === "object" && "url" in user.avatar) {
+          avatarUrl = (user.avatar as any).url;
+        }
+      }
+
+      // Return safe public shape using actual DB field names
       const profile = {
         id: user.id,
         username: user.username,
-        displayName: user.displayName || user.username,
+        name: user.firstName || user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
         bio: user.bio || "",
-        avatar: user.avatar,
-        avatarUrl: user.avatarUrl,
+        avatar: avatarUrl,
         followersCount: user.followersCount || 0,
         followingCount: user.followingCount || 0,
         postsCount: user.postsCount || 0,
-        isPrivate: user.isPrivate || false,
-        isVerified: user.isVerified || false,
+        verified: user.verified || false,
+        pronouns: user.pronouns,
+        location: user.location,
         createdAt: user.createdAt,
       };
 
@@ -54,7 +64,7 @@ export const getUserProfileEndpoint: Endpoint = {
 
       if (req.user) {
         const currentUserId = String(req.user.id);
-        
+
         if (currentUserId !== String(userId)) {
           const [followingCheck, followedByCheck] = await Promise.all([
             req.payload.find({
@@ -90,19 +100,20 @@ export const getUserProfileEndpoint: Endpoint = {
       console.error("[Endpoint/profile] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
 };
 
 export const updateOwnProfileEndpoint: Endpoint = {
-  path: "/users/me",
+  path: "/profile/me",
   method: "patch",
   handler: async (req) => {
     console.log("[Endpoint/profile] PATCH own profile");
 
     if (!req.user) {
+      console.log("[Endpoint/profile] No user in request");
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -114,19 +125,76 @@ export const updateOwnProfileEndpoint: Endpoint = {
     }
 
     const userId = String(req.user.id);
+    console.log(
+      "[Endpoint/profile] Updating user:",
+      userId,
+      "with body:",
+      JSON.stringify(body),
+    );
 
-    // Allowlist of editable fields
-    const allowedFields = ["displayName", "bio", "avatarUrl", "isPrivate"];
+    // Build update data with actual DB field names
     const updateData: Record<string, any> = {};
 
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
+    // Map 'name' to 'firstName'
+    if (body.name !== undefined) {
+      updateData.firstName = body.name;
+    }
+    if (body.firstName !== undefined) {
+      updateData.firstName = body.firstName;
+    }
+    if (body.lastName !== undefined) {
+      updateData.lastName = body.lastName;
     }
 
+    // Bio maps directly
+    if (body.bio !== undefined) {
+      updateData.bio = body.bio;
+    }
+
+    // Location maps directly
+    if (body.location !== undefined) {
+      updateData.location = body.location;
+    }
+
+    // Pronouns maps directly
+    if (body.pronouns !== undefined) {
+      updateData.pronouns = body.pronouns;
+    }
+
+    // Avatar: client sends URL string, but DB expects media relationship
+    // For now, we'll skip avatar updates via this endpoint
+    // Avatar should be updated via /users/me/avatar endpoint
+    // But if it's a URL string (from Bunny CDN), we can't store it in the relationship field
+    // We'll need to handle this differently - for now just log it
+    if (body.avatar !== undefined) {
+      console.log(
+        "[Endpoint/profile] Avatar URL received (not stored in relationship):",
+        body.avatar,
+      );
+      // TODO: Could create a media record or store URL in a separate field
+    }
+
+    console.log(
+      "[Endpoint/profile] Mapped updateData:",
+      JSON.stringify(updateData),
+    );
+
     if (Object.keys(updateData).length === 0) {
-      return Response.json({ error: "No valid fields to update" }, { status: 400 });
+      // If only avatar was sent, return success since we logged it
+      if (body.avatar !== undefined) {
+        return Response.json({
+          user: {
+            id: req.user.id,
+            message:
+              "Avatar URL received but not stored (media relationship expected)",
+          },
+        });
+      }
+      console.log("[Endpoint/profile] No valid fields to update");
+      return Response.json(
+        { error: "No valid fields to update" },
+        { status: 400 },
+      );
     }
 
     try {
@@ -136,19 +204,35 @@ export const updateOwnProfileEndpoint: Endpoint = {
         data: updateData,
       });
 
+      console.log("[Endpoint/profile] Update successful for user:", userId);
+
+      // Get avatar URL from relationship if populated
+      let avatarUrl = null;
+      if (updated.avatar) {
+        if (typeof updated.avatar === "object" && "url" in updated.avatar) {
+          avatarUrl = (updated.avatar as any).url;
+        }
+      }
+
       return Response.json({
-        id: updated.id,
-        username: updated.username,
-        displayName: updated.displayName,
-        bio: updated.bio,
-        avatarUrl: updated.avatarUrl,
-        isPrivate: updated.isPrivate,
+        user: {
+          id: updated.id,
+          username: updated.username,
+          name: updated.firstName,
+          firstName: updated.firstName,
+          lastName: updated.lastName,
+          bio: updated.bio,
+          avatar: avatarUrl,
+          location: updated.location,
+          pronouns: updated.pronouns,
+          verified: updated.verified,
+        },
       });
     } catch (err: any) {
-      console.error("[Endpoint/profile] Error:", err);
+      console.error("[Endpoint/profile] Update error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -171,37 +255,41 @@ export const updateAvatarEndpoint: Endpoint = {
       return Response.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { avatarUrl, avatar } = body;
+    // Accept avatar as media ID (the DB field is a relationship)
+    const { avatar } = body;
 
-    if (!avatarUrl && !avatar) {
+    if (!avatar) {
       return Response.json(
-        { error: "avatarUrl or avatar (media ID) required" },
-        { status: 400 }
+        { error: "avatar (media ID) required" },
+        { status: 400 },
       );
     }
 
     const userId = String(req.user.id);
 
     try {
-      const updateData: Record<string, any> = {};
-      if (avatarUrl) updateData.avatarUrl = avatarUrl;
-      if (avatar) updateData.avatar = avatar;
-
       const updated = await req.payload.update({
         collection: "users",
         id: userId,
-        data: updateData,
+        data: { avatar },
       });
 
+      // Get URL from populated avatar
+      let avatarUrl = null;
+      if (updated.avatar) {
+        if (typeof updated.avatar === "object" && "url" in updated.avatar) {
+          avatarUrl = (updated.avatar as any).url;
+        }
+      }
+
       return Response.json({
-        avatarUrl: updated.avatarUrl,
-        avatar: updated.avatar,
+        avatar: avatarUrl,
       });
     } catch (err: any) {
       console.error("[Endpoint/avatar] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -220,7 +308,10 @@ export const getUserPostsEndpoint: Endpoint = {
 
     const url = new URL(req.url || "", "http://localhost");
     const page = parseInt(url.searchParams.get("page") || "1", 10);
-    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 100);
+    const limit = Math.min(
+      parseInt(url.searchParams.get("limit") || "20", 10),
+      100,
+    );
 
     try {
       const posts = await req.payload.find({
@@ -246,7 +337,7 @@ export const getUserPostsEndpoint: Endpoint = {
       console.error("[Endpoint/posts] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -306,7 +397,7 @@ export const getFollowStateEndpoint: Endpoint = {
       console.error("[Endpoint/follow-state] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
