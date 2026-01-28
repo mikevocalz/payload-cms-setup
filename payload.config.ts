@@ -272,6 +272,23 @@ const config = buildConfig({
   plugins: [
     payloadRealTime({
       collections: {
+        // Simple broadcast collections
+        posts: {
+          events: ["create", "update", "delete"],
+        },
+        comments: {
+          room: (doc: any) => {
+            return doc.post ? `post:${doc.post}` : undefined;
+          },
+          events: ["create", "update", "delete"],
+        },
+        likes: {
+          events: ["create", "delete"],
+        },
+        follows: {
+          events: ["create", "delete"],
+        },
+        // Room-based collections for targeted delivery
         messages: {
           room: (doc: any) => {
             return doc.conversation
