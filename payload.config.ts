@@ -122,6 +122,18 @@ import {
   registerDeviceEndpoint,
   getBadgesEndpoint,
 } from "./endpoints/notifications";
+import {
+  getBlockedUsersEndpoint,
+  blockUserEndpoint,
+  unblockUserEndpoint,
+  checkBlockedEndpoint,
+} from "./endpoints/blocks";
+import {
+  getNotificationPrefsEndpoint,
+  updateNotificationPrefsEndpoint,
+  getPrivacySettingsEndpoint,
+  updatePrivacySettingsEndpoint,
+} from "./endpoints/user-settings";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -249,6 +261,16 @@ const config = buildConfig({
     markNotificationReadEndpoint,
     registerDeviceEndpoint,
     getBadgesEndpoint,
+    // Blocks
+    getBlockedUsersEndpoint,
+    blockUserEndpoint,
+    unblockUserEndpoint,
+    checkBlockedEndpoint,
+    // User Settings
+    getNotificationPrefsEndpoint,
+    updateNotificationPrefsEndpoint,
+    getPrivacySettingsEndpoint,
+    updatePrivacySettingsEndpoint,
   ],
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),

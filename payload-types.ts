@@ -352,6 +352,10 @@ export interface Comment {
    */
   parent?: (number | null) | Comment;
   likesCount?: number | null;
+  /**
+   * Client-generated ID for idempotency (prevents duplicates)
+   */
+  clientMutationId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1483,6 +1487,7 @@ export interface CommentsSelect<T extends boolean = true> {
   content?: T;
   parent?: T;
   likesCount?: T;
+  clientMutationId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

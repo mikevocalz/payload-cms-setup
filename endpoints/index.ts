@@ -1,6 +1,6 @@
 /**
  * Payload v3 Custom Endpoints Index
- * 
+ *
  * All endpoints are registered in payload.config.ts
  */
 
@@ -47,10 +47,7 @@ export {
 } from "./posts";
 
 // Comments
-export {
-  createCommentEndpoint,
-  getCommentsEndpoint,
-} from "./comments";
+export { createCommentEndpoint, getCommentsEndpoint } from "./comments";
 
 // Stories
 export {
@@ -77,3 +74,19 @@ export {
   registerDeviceEndpoint,
   getBadgesEndpoint,
 } from "./notifications";
+
+// Blocks (User Blocking)
+export {
+  getBlockedUsersEndpoint,
+  blockUserEndpoint,
+  unblockUserEndpoint,
+  checkBlockedEndpoint,
+} from "./blocks";
+
+// User Settings (Notification Prefs, Privacy)
+export {
+  getNotificationPrefsEndpoint,
+  updateNotificationPrefsEndpoint,
+  getPrivacySettingsEndpoint,
+  updatePrivacySettingsEndpoint,
+} from "./user-settings";
