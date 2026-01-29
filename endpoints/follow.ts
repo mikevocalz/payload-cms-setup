@@ -1,10 +1,10 @@
 /**
  * Follow/Unfollow Endpoints for Payload v3
- *
+ * 
  * POST /api/users/follow - Follow a user
  * DELETE /api/users/follow - Unfollow a user
  * GET /api/users/follow - Check if following a user
- *
+ * 
  * CANONICAL IMPLEMENTATION:
  * - Idempotent: follow twice -> returns { following: true }
  * - Self-follow prevented by collection hooks
@@ -36,23 +36,20 @@ export const followEndpoint: Endpoint = {
     if (!followingId) {
       return Response.json(
         { error: "followingId or userId required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const followerId = String(req.user.id);
     const targetId = String(followingId);
 
-    console.log("[Endpoint/follow] Processing follow:", {
-      followerId,
-      targetId,
-    });
+    console.log("[Endpoint/follow] Processing follow:", { followerId, targetId });
 
     // Self-follow check (also enforced by collection hook)
     if (followerId === targetId) {
       return Response.json(
         { error: "Cannot follow yourself", code: "SELF_FOLLOW_FORBIDDEN" },
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -68,7 +65,7 @@ export const followEndpoint: Endpoint = {
 
       console.log("[Endpoint/follow] Follow created successfully");
 
-      // Get updated user to return counts
+      // Get fresh follower count
       const targetUser = await req.payload.findByID({
         collection: "users",
         id: targetId,
@@ -77,8 +74,7 @@ export const followEndpoint: Endpoint = {
       return Response.json({
         following: true,
         message: "User followed successfully",
-        followersCount: targetUser?.followersCount || 0,
-        followingCount: targetUser?.followingCount || 0,
+        followersCount: (targetUser?.followersCount as number) || 0,
       });
     } catch (err: any) {
       // IDEMPOTENT: Already following is success, not error
@@ -97,15 +93,14 @@ export const followEndpoint: Endpoint = {
         return Response.json({
           following: true,
           message: "Already following",
-          followersCount: targetUser?.followersCount || 0,
-          followingCount: targetUser?.followingCount || 0,
+          followersCount: (targetUser?.followersCount as number) || 0,
         });
       }
 
       console.error("[Endpoint/follow] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 },
+        { status: err.status || 500 }
       );
     }
   },
@@ -134,17 +129,14 @@ export const unfollowEndpoint: Endpoint = {
     if (!followingId) {
       return Response.json(
         { error: "followingId or userId required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const followerId = String(req.user.id);
     const targetId = String(followingId);
 
-    console.log("[Endpoint/follow] Processing unfollow:", {
-      followerId,
-      targetId,
-    });
+    console.log("[Endpoint/follow] Processing unfollow:", { followerId, targetId });
 
     try {
       // Find existing follow
@@ -169,8 +161,7 @@ export const unfollowEndpoint: Endpoint = {
         return Response.json({
           following: false,
           message: "Not following",
-          followersCount: targetUser?.followersCount || 0,
-          followingCount: targetUser?.followingCount || 0,
+          followersCount: (targetUser?.followersCount as number) || 0,
         });
       }
 
@@ -182,7 +173,7 @@ export const unfollowEndpoint: Endpoint = {
 
       console.log("[Endpoint/follow] Unfollow successful");
 
-      // Get updated user to return counts (hooks update counts)
+      // Get fresh follower count
       const targetUser = await req.payload.findByID({
         collection: "users",
         id: targetId,
@@ -191,14 +182,13 @@ export const unfollowEndpoint: Endpoint = {
       return Response.json({
         following: false,
         message: "User unfollowed successfully",
-        followersCount: targetUser?.followersCount || 0,
-        followingCount: targetUser?.followingCount || 0,
+        followersCount: (targetUser?.followersCount as number) || 0,
       });
     } catch (err: any) {
       console.error("[Endpoint/follow] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 },
+        { status: err.status || 500 }
       );
     }
   },
@@ -220,7 +210,7 @@ export const checkFollowEndpoint: Endpoint = {
     if (!userId) {
       return Response.json(
         { error: "userId query parameter required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -244,7 +234,7 @@ export const checkFollowEndpoint: Endpoint = {
       console.error("[Endpoint/follow] GET error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 },
+        { status: err.status || 500 }
       );
     }
   },

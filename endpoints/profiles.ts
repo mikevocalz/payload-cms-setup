@@ -45,7 +45,6 @@ export const getUserProfileEndpoint: Endpoint = {
         id: user.id,
         username: user.username,
         name: user.firstName || user.username,
-        displayName: user.firstName || user.username,
         firstName: user.firstName,
         lastName: user.lastName,
         bio: user.bio || "",
