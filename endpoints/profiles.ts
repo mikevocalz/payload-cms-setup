@@ -42,19 +42,23 @@ export const getUserProfileEndpoint: Endpoint = {
 
       // CRITICAL: Compute counts DYNAMICALLY from follows collection
       // Do NOT rely on stored counts which may be stale or 0
+      // NOTE: Payload v3 doesn't have count() - use find() with limit: 0
       const [followersResult, followingResult, postsResult] = await Promise.all(
         [
-          req.payload.count({
+          req.payload.find({
             collection: "follows",
             where: { following: { equals: userId } },
+            limit: 0,
           }),
-          req.payload.count({
+          req.payload.find({
             collection: "follows",
             where: { follower: { equals: userId } },
+            limit: 0,
           }),
-          req.payload.count({
+          req.payload.find({
             collection: "posts",
             where: { author: { equals: userId } },
+            limit: 0,
           }),
         ],
       );
@@ -418,14 +422,16 @@ export const getFollowStateEndpoint: Endpoint = {
           },
           limit: 1,
         }),
-        // CRITICAL: Compute counts dynamically
-        req.payload.count({
+        // CRITICAL: Compute counts dynamically (use find with limit:0)
+        req.payload.find({
           collection: "follows",
           where: { following: { equals: userId } },
+          limit: 0,
         }),
-        req.payload.count({
+        req.payload.find({
           collection: "follows",
           where: { follower: { equals: userId } },
+          limit: 0,
         }),
       ]);
 

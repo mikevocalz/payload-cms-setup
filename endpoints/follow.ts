@@ -69,14 +69,17 @@ export const followEndpoint: Endpoint = {
       console.log("[Endpoint/follow] Follow created successfully");
 
       // CRITICAL: Compute counts dynamically from follows collection
+      // NOTE: Payload v3 doesn't have count() - use find() with limit: 0
       const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-        req.payload.count({
+        req.payload.find({
           collection: "follows",
           where: { following: { equals: targetId } },
+          limit: 0,
         }),
-        req.payload.count({
+        req.payload.find({
           collection: "follows",
           where: { follower: { equals: followerId } },
+          limit: 0,
         }),
       ]);
 
@@ -100,15 +103,17 @@ export const followEndpoint: Endpoint = {
       ) {
         console.log("[Endpoint/follow] Already following, returning success");
 
-        // Compute counts dynamically
+        // Compute counts dynamically (use find with limit:0)
         const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-          req.payload.count({
+          req.payload.find({
             collection: "follows",
             where: { following: { equals: targetId } },
+            limit: 0,
           }),
-          req.payload.count({
+          req.payload.find({
             collection: "follows",
             where: { follower: { equals: followerId } },
+            limit: 0,
           }),
         ]);
 
@@ -179,15 +184,17 @@ export const unfollowEndpoint: Endpoint = {
       if (existing.totalDocs === 0) {
         console.log("[Endpoint/follow] Not following, returning success");
 
-        // Compute counts dynamically
+        // Compute counts dynamically (use find with limit:0)
         const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-          req.payload.count({
+          req.payload.find({
             collection: "follows",
             where: { following: { equals: targetId } },
+            limit: 0,
           }),
-          req.payload.count({
+          req.payload.find({
             collection: "follows",
             where: { follower: { equals: followerId } },
+            limit: 0,
           }),
         ]);
 
@@ -207,15 +214,17 @@ export const unfollowEndpoint: Endpoint = {
 
       console.log("[Endpoint/follow] Unfollow successful");
 
-      // CRITICAL: Compute counts dynamically after unfollow
+      // CRITICAL: Compute counts dynamically after unfollow (use find with limit:0)
       const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-        req.payload.count({
+        req.payload.find({
           collection: "follows",
           where: { following: { equals: targetId } },
+          limit: 0,
         }),
-        req.payload.count({
+        req.payload.find({
           collection: "follows",
           where: { follower: { equals: followerId } },
+          limit: 0,
         }),
       ]);
 
