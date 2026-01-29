@@ -134,6 +134,18 @@ import {
   getPrivacySettingsEndpoint,
   updatePrivacySettingsEndpoint,
 } from "./endpoints/user-settings";
+import {
+  uploadMediaEndpoint,
+  uploadConfigEndpoint,
+} from "./endpoints/media-upload";
+import {
+  getEventEndpoint,
+  rsvpEventEndpoint,
+  getEventParticipantsEndpoint,
+  createEventCommentEndpoint,
+  getEventCommentsEndpoint,
+  getEventTicketEndpoint,
+} from "./endpoints/events";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -271,6 +283,16 @@ const config = buildConfig({
     updateNotificationPrefsEndpoint,
     getPrivacySettingsEndpoint,
     updatePrivacySettingsEndpoint,
+    // Media Upload (Server-side Bunny CDN)
+    uploadMediaEndpoint,
+    uploadConfigEndpoint,
+    // Events (RSVP, Participants, Comments, Tickets)
+    getEventEndpoint,
+    rsvpEventEndpoint,
+    getEventParticipantsEndpoint,
+    createEventCommentEndpoint,
+    getEventCommentsEndpoint,
+    getEventTicketEndpoint,
   ],
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),

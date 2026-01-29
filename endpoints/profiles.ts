@@ -32,25 +32,58 @@ export const getUserProfileEndpoint: Endpoint = {
         return Response.json({ error: "User not found" }, { status: 404 });
       }
 
-      // Get avatar URL from relationship if populated
+      // Get avatar URL - prefer avatarUrl text field, fallback to avatar relationship
       let avatarUrl = null;
-      if (user.avatar) {
+      // First check avatarUrl text field (set by server-side Bunny upload)
+      if (
+        (user as any).avatarUrl &&
+        typeof (user as any).avatarUrl === "string"
+      ) {
+        avatarUrl = (user as any).avatarUrl;
+      }
+      // Fallback to avatar relationship if populated
+      else if (user.avatar) {
         if (typeof user.avatar === "object" && "url" in user.avatar) {
           avatarUrl = (user.avatar as any).url;
+        } else if (
+          typeof user.avatar === "string" &&
+          (user.avatar as string).startsWith("http")
+        ) {
+          avatarUrl = user.avatar as string;
         }
       }
+
+      // CRITICAL: Compute follow counts dynamically from follows collection
+      // Stored counts may be stale, so we compute them fresh
+      const [followersResult, followingResult] = await Promise.all([
+        req.payload.find({
+          collection: "follows",
+          where: { following: { equals: userId } },
+          limit: 0, // Only need count
+        }),
+        req.payload.find({
+          collection: "follows",
+          where: { follower: { equals: userId } },
+          limit: 0, // Only need count
+        }),
+      ]);
+
+      const computedFollowersCount = followersResult.totalDocs;
+      const computedFollowingCount = followingResult.totalDocs;
 
       // Return safe public shape using actual DB field names
       const profile = {
         id: user.id,
         username: user.username,
         name: user.firstName || user.username,
+        displayName: user.firstName || user.username,
         firstName: user.firstName,
         lastName: user.lastName,
         bio: user.bio || "",
         avatar: avatarUrl,
-        followersCount: user.followersCount || 0,
-        followingCount: user.followingCount || 0,
+        avatarUrl: avatarUrl, // Include both for compatibility
+        followersCount: computedFollowersCount,
+        followingCount: computedFollowingCount,
         postsCount: user.postsCount || 0,
         verified: user.verified || false,
         pronouns: user.pronouns,
@@ -387,11 +420,25 @@ export const getFollowStateEndpoint: Endpoint = {
         return Response.json({ error: "User not found" }, { status: 404 });
       }
 
+      // CRITICAL: Compute follow counts dynamically from follows collection
+      const [followersResult, followingResult] = await Promise.all([
+        req.payload.find({
+          collection: "follows",
+          where: { following: { equals: userId } },
+          limit: 0,
+        }),
+        req.payload.find({
+          collection: "follows",
+          where: { follower: { equals: userId } },
+          limit: 0,
+        }),
+      ]);
+
       return Response.json({
         isFollowing: followingCheck.totalDocs > 0,
         isFollowedBy: followedByCheck.totalDocs > 0,
-        followersCount: user.followersCount || 0,
-        followingCount: user.followingCount || 0,
+        followersCount: followersResult.totalDocs,
+        followingCount: followingResult.totalDocs,
       });
     } catch (err: any) {
       console.error("[Endpoint/follow-state] Error:", err);

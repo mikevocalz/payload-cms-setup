@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { CollectionConfig } from "payload";
 
 export const EventRsvps: CollectionConfig = {
   slug: "event-rsvps",
@@ -32,6 +32,14 @@ export const EventRsvps: CollectionConfig = {
       ],
     },
     {
+      name: "ticketToken",
+      type: "text",
+      admin: {
+        description: "Unique QR code token for ticket verification",
+        readOnly: true,
+      },
+    },
+    {
       name: "createdAt",
       type: "date",
       defaultValue: () => new Date(),
@@ -46,4 +54,4 @@ export const EventRsvps: CollectionConfig = {
       unique: true,
     },
   ],
-}
+};

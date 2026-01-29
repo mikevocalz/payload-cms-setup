@@ -90,3 +90,16 @@ export {
   getPrivacySettingsEndpoint,
   updatePrivacySettingsEndpoint,
 } from "./user-settings";
+
+// Media Upload (Server-side Bunny CDN)
+export { uploadMediaEndpoint, uploadConfigEndpoint } from "./media-upload";
+
+// Events (RSVP, Participants, Comments, Tickets)
+export {
+  getEventEndpoint,
+  rsvpEventEndpoint,
+  getEventParticipantsEndpoint,
+  createEventCommentEndpoint,
+  getEventCommentsEndpoint,
+  getEventTicketEndpoint,
+} from "./events";
