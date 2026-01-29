@@ -68,31 +68,17 @@ export const followEndpoint: Endpoint = {
 
       console.log("[Endpoint/follow] Follow created successfully");
 
-      // CRITICAL: Compute counts dynamically from follows collection
-      // NOTE: Payload v3 doesn't have count() - use find() with limit: 0
-      const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-        req.payload.find({
-          collection: "follows",
-          where: { following: { equals: targetId } },
-          limit: 0,
-        }),
-        req.payload.find({
-          collection: "follows",
-          where: { follower: { equals: followerId } },
-          limit: 0,
-        }),
-      ]);
-
-      console.log("[Endpoint/follow] Computed counts after follow:", {
-        targetFollowersCount: targetFollowersCount.totalDocs,
-        viewerFollowingCount: viewerFollowingCount.totalDocs,
+      // Get updated user to return counts
+      const targetUser = await req.payload.findByID({
+        collection: "users",
+        id: targetId,
       });
 
       return Response.json({
         following: true,
         message: "User followed successfully",
-        followersCount: targetFollowersCount.totalDocs,
-        followingCount: viewerFollowingCount.totalDocs,
+        followersCount: targetUser?.followersCount || 0,
+        followingCount: targetUser?.followingCount || 0,
       });
     } catch (err: any) {
       // IDEMPOTENT: Already following is success, not error
@@ -103,25 +89,16 @@ export const followEndpoint: Endpoint = {
       ) {
         console.log("[Endpoint/follow] Already following, returning success");
 
-        // Compute counts dynamically (use find with limit:0)
-        const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-          req.payload.find({
-            collection: "follows",
-            where: { following: { equals: targetId } },
-            limit: 0,
-          }),
-          req.payload.find({
-            collection: "follows",
-            where: { follower: { equals: followerId } },
-            limit: 0,
-          }),
-        ]);
+        const targetUser = await req.payload.findByID({
+          collection: "users",
+          id: targetId,
+        });
 
         return Response.json({
           following: true,
           message: "Already following",
-          followersCount: targetFollowersCount.totalDocs,
-          followingCount: viewerFollowingCount.totalDocs,
+          followersCount: targetUser?.followersCount || 0,
+          followingCount: targetUser?.followingCount || 0,
         });
       }
 
@@ -184,25 +161,16 @@ export const unfollowEndpoint: Endpoint = {
       if (existing.totalDocs === 0) {
         console.log("[Endpoint/follow] Not following, returning success");
 
-        // Compute counts dynamically (use find with limit:0)
-        const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-          req.payload.find({
-            collection: "follows",
-            where: { following: { equals: targetId } },
-            limit: 0,
-          }),
-          req.payload.find({
-            collection: "follows",
-            where: { follower: { equals: followerId } },
-            limit: 0,
-          }),
-        ]);
+        const targetUser = await req.payload.findByID({
+          collection: "users",
+          id: targetId,
+        });
 
         return Response.json({
           following: false,
           message: "Not following",
-          followersCount: targetFollowersCount.totalDocs,
-          followingCount: viewerFollowingCount.totalDocs,
+          followersCount: targetUser?.followersCount || 0,
+          followingCount: targetUser?.followingCount || 0,
         });
       }
 
@@ -214,30 +182,17 @@ export const unfollowEndpoint: Endpoint = {
 
       console.log("[Endpoint/follow] Unfollow successful");
 
-      // CRITICAL: Compute counts dynamically after unfollow (use find with limit:0)
-      const [targetFollowersCount, viewerFollowingCount] = await Promise.all([
-        req.payload.find({
-          collection: "follows",
-          where: { following: { equals: targetId } },
-          limit: 0,
-        }),
-        req.payload.find({
-          collection: "follows",
-          where: { follower: { equals: followerId } },
-          limit: 0,
-        }),
-      ]);
-
-      console.log("[Endpoint/follow] Computed counts after unfollow:", {
-        targetFollowersCount: targetFollowersCount.totalDocs,
-        viewerFollowingCount: viewerFollowingCount.totalDocs,
+      // Get updated user to return counts (hooks update counts)
+      const targetUser = await req.payload.findByID({
+        collection: "users",
+        id: targetId,
       });
 
       return Response.json({
         following: false,
         message: "User unfollowed successfully",
-        followersCount: targetFollowersCount.totalDocs,
-        followingCount: viewerFollowingCount.totalDocs,
+        followersCount: targetUser?.followersCount || 0,
+        followingCount: targetUser?.followingCount || 0,
       });
     } catch (err: any) {
       console.error("[Endpoint/follow] Error:", err);

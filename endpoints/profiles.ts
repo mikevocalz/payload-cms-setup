@@ -40,39 +40,6 @@ export const getUserProfileEndpoint: Endpoint = {
         }
       }
 
-      // CRITICAL: Compute counts DYNAMICALLY from follows collection
-      // Do NOT rely on stored counts which may be stale or 0
-      // NOTE: Payload v3 doesn't have count() - use find() with limit: 0
-      const [followersResult, followingResult, postsResult] = await Promise.all(
-        [
-          req.payload.find({
-            collection: "follows",
-            where: { following: { equals: userId } },
-            limit: 0,
-          }),
-          req.payload.find({
-            collection: "follows",
-            where: { follower: { equals: userId } },
-            limit: 0,
-          }),
-          req.payload.find({
-            collection: "posts",
-            where: { author: { equals: userId } },
-            limit: 0,
-          }),
-        ],
-      );
-
-      const followersCount = followersResult.totalDocs;
-      const followingCount = followingResult.totalDocs;
-      const postsCount = postsResult.totalDocs;
-
-      console.log("[Endpoint/profile] Computed counts for user:", userId, {
-        followersCount,
-        followingCount,
-        postsCount,
-      });
-
       // Return safe public shape using actual DB field names
       const profile = {
         id: user.id,
@@ -83,9 +50,9 @@ export const getUserProfileEndpoint: Endpoint = {
         lastName: user.lastName,
         bio: user.bio || "",
         avatar: avatarUrl,
-        followersCount,
-        followingCount,
-        postsCount,
+        followersCount: user.followersCount || 0,
+        followingCount: user.followingCount || 0,
+        postsCount: user.postsCount || 0,
         verified: user.verified || false,
         pronouns: user.pronouns,
         location: user.location,
@@ -394,14 +361,7 @@ export const getFollowStateEndpoint: Endpoint = {
     const currentUserId = String(req.user.id);
 
     try {
-      // Compute all counts and states in parallel
-      const [
-        user,
-        followingCheck,
-        followedByCheck,
-        followersCount,
-        followingCount,
-      ] = await Promise.all([
+      const [user, followingCheck, followedByCheck] = await Promise.all([
         req.payload.findByID({
           collection: "users",
           id: userId,
@@ -422,17 +382,6 @@ export const getFollowStateEndpoint: Endpoint = {
           },
           limit: 1,
         }),
-        // CRITICAL: Compute counts dynamically (use find with limit:0)
-        req.payload.find({
-          collection: "follows",
-          where: { following: { equals: userId } },
-          limit: 0,
-        }),
-        req.payload.find({
-          collection: "follows",
-          where: { follower: { equals: userId } },
-          limit: 0,
-        }),
       ]);
 
       if (!user) {
@@ -442,8 +391,8 @@ export const getFollowStateEndpoint: Endpoint = {
       return Response.json({
         isFollowing: followingCheck.totalDocs > 0,
         isFollowedBy: followedByCheck.totalDocs > 0,
-        followersCount: followersCount.totalDocs,
-        followingCount: followingCount.totalDocs,
+        followersCount: user.followersCount || 0,
+        followingCount: user.followingCount || 0,
       });
     } catch (err: any) {
       console.error("[Endpoint/follow-state] Error:", err);
