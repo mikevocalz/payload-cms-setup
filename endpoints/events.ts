@@ -358,9 +358,14 @@ export const createEventCommentEndpoint: Endpoint = {
       return Response.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { text, clientMutationId } = body;
+    const { text, content, clientMutationId } = body;
+    const commentText = text || content; // Support both field names
 
-    if (!text || typeof text !== "string" || text.trim().length === 0) {
+    if (
+      !commentText ||
+      typeof commentText !== "string" ||
+      commentText.trim().length === 0
+    ) {
       return Response.json({ error: "Text required" }, { status: 400 });
     }
 
@@ -393,7 +398,7 @@ export const createEventCommentEndpoint: Endpoint = {
         data: {
           event: eventId,
           author: userId,
-          text: text.trim(),
+          content: commentText.trim(),
           clientMutationId,
         } as any,
       });
