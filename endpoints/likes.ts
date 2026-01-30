@@ -1,10 +1,10 @@
 /**
  * Like/Unlike Endpoints for Payload v3
- * 
+ *
  * POST /api/posts/:id/like - Like a post (idempotent)
  * DELETE /api/posts/:id/like - Unlike a post (idempotent)
  * GET /api/posts/:id/like-state - Check like state
- * 
+ *
  * Also supports comment likes:
  * POST /api/comments/:id/like
  * DELETE /api/comments/:id/like
@@ -51,6 +51,35 @@ export const likePostEndpoint: Endpoint = {
 
       console.log("[Endpoint/like] Like created successfully");
 
+      // CRITICAL: Create notification for post author (if not self-like)
+      const postAuthorId =
+        typeof post.author === "object"
+          ? String((post.author as any).id)
+          : String(post.author);
+
+      if (postAuthorId && postAuthorId !== userId) {
+        try {
+          await req.payload.create({
+            collection: "notifications",
+            data: {
+              recipient: postAuthorId,
+              actor: userId,
+              type: "post_like",
+              entityType: "post",
+              entityId: postId,
+              message: "liked your post",
+              read: false,
+            } as any,
+          });
+          console.log("[Endpoint/like] Notification created for post like");
+        } catch (notifErr) {
+          console.error(
+            "[Endpoint/like] Failed to create notification:",
+            notifErr,
+          );
+        }
+      }
+
       // Get fresh count
       const freshPost = await req.payload.findByID({
         collection: "posts",
@@ -83,7 +112,7 @@ export const likePostEndpoint: Endpoint = {
       console.error("[Endpoint/like] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -154,7 +183,7 @@ export const unlikePostEndpoint: Endpoint = {
       console.error("[Endpoint/like] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -200,7 +229,7 @@ export const likeStateEndpoint: Endpoint = {
       console.error("[Endpoint/like-state] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -263,7 +292,7 @@ export const likeCommentEndpoint: Endpoint = {
       console.error("[Endpoint/like] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -325,7 +354,7 @@ export const unlikeCommentEndpoint: Endpoint = {
       console.error("[Endpoint/like] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },

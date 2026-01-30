@@ -76,7 +76,21 @@ export const Events: CollectionConfig = {
       name: "image",
       type: "text",
       admin: {
-        description: "External image URL for mobile app",
+        description: "External image URL for mobile app (legacy)",
+      },
+    },
+    {
+      name: "coverImageUrl",
+      type: "text",
+      admin: {
+        description: "Bunny CDN URL for cover image (preferred)",
+      },
+    },
+    {
+      name: "images",
+      type: "json",
+      admin: {
+        description: "Gallery images (Bunny CDN URLs) - JSON array",
       },
     },
     {

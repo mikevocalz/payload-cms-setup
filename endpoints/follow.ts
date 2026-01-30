@@ -68,6 +68,27 @@ export const followEndpoint: Endpoint = {
 
       console.log("[Endpoint/follow] Follow created successfully");
 
+      // CRITICAL: Create notification for the followed user
+      try {
+        await req.payload.create({
+          collection: "notifications",
+          data: {
+            recipient: targetId,
+            actor: followerId,
+            type: "follow",
+            message: "started following you",
+            read: false,
+          } as any,
+        });
+        console.log("[Endpoint/follow] Notification created for follow");
+      } catch (notifErr) {
+        // Don't fail the follow if notification fails
+        console.error(
+          "[Endpoint/follow] Failed to create notification:",
+          notifErr,
+        );
+      }
+
       // CRITICAL: Compute counts dynamically from follows collection
       const [followersResult, followingResult] = await Promise.all([
         req.payload.find({

@@ -1,9 +1,9 @@
 /**
  * Comments Endpoints for Payload v3
- * 
+ *
  * POST /api/posts/:id/comments - Create comment (with optional parentCommentId for replies)
  * GET /api/posts/:id/comments - Get comments for a post
- * 
+ *
  * INVARIANTS:
  * - Two-level threading only (replies to replies rejected)
  * - Dedupe by clientMutationId
@@ -35,7 +35,11 @@ export const createCommentEndpoint: Endpoint = {
 
     const { content, parentCommentId, clientMutationId } = body;
 
-    if (!content || typeof content !== "string" || content.trim().length === 0) {
+    if (
+      !content ||
+      typeof content !== "string" ||
+      content.trim().length === 0
+    ) {
       return Response.json({ error: "Content required" }, { status: 400 });
     }
 
@@ -60,14 +64,20 @@ export const createCommentEndpoint: Endpoint = {
         });
 
         if (!parentComment) {
-          return Response.json({ error: "Parent comment not found" }, { status: 404 });
+          return Response.json(
+            { error: "Parent comment not found" },
+            { status: 404 },
+          );
         }
 
         // Check if parent is already a reply (has its own parent)
-        if ((parentComment as any).parentComment || (parentComment as any).parent) {
+        if (
+          (parentComment as any).parentComment ||
+          (parentComment as any).parent
+        ) {
           return Response.json(
             { error: "Cannot reply to a reply (two-level threading only)" },
-            { status: 400 }
+            { status: 400 },
           );
         }
       }
@@ -85,7 +95,9 @@ export const createCommentEndpoint: Endpoint = {
         });
 
         if (existing.totalDocs > 0) {
-          console.log("[Endpoint/comments] Duplicate comment prevented by clientMutationId");
+          console.log(
+            "[Endpoint/comments] Duplicate comment prevented by clientMutationId",
+          );
           return Response.json({
             ...existing.docs[0],
             deduplicated: true,
@@ -133,13 +145,58 @@ export const createCommentEndpoint: Endpoint = {
             data: {
               recipient: postAuthorId,
               actor: userId,
-              type: "comment",
+              type: "post_comment",
               entityType: "post",
               entityId: String(postId),
+              message: "commented on your post",
+              read: false,
             } as any,
           });
+          console.log(
+            "[Endpoint/comments] Notification created for post comment",
+          );
         } catch (e) {
           console.error("[Endpoint/comments] Error creating notification:", e);
+        }
+      }
+
+      // Create notification for parent comment author (if reply and not self)
+      if (parentCommentId) {
+        try {
+          const parentComment = await req.payload.findByID({
+            collection: "comments",
+            id: parentCommentId,
+          });
+          const parentAuthorId =
+            typeof parentComment.author === "object"
+              ? (parentComment.author as any).id
+              : parentComment.author;
+
+          if (
+            String(parentAuthorId) !== userId &&
+            String(parentAuthorId) !== String(postAuthorId)
+          ) {
+            await req.payload.create({
+              collection: "notifications",
+              data: {
+                recipient: parentAuthorId,
+                actor: userId,
+                type: "comment_reply",
+                entityType: "comment",
+                entityId: String(parentCommentId),
+                message: "replied to your comment",
+                read: false,
+              } as any,
+            });
+            console.log(
+              "[Endpoint/comments] Notification created for comment reply",
+            );
+          }
+        } catch (e) {
+          console.error(
+            "[Endpoint/comments] Error creating reply notification:",
+            e,
+          );
         }
       }
 
@@ -148,7 +205,7 @@ export const createCommentEndpoint: Endpoint = {
       console.error("[Endpoint/comments] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -167,7 +224,10 @@ export const getCommentsEndpoint: Endpoint = {
 
     const url = new URL(req.url || "", "http://localhost");
     const page = parseInt(url.searchParams.get("page") || "1", 10);
-    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10), 100);
+    const limit = Math.min(
+      parseInt(url.searchParams.get("limit") || "50", 10),
+      100,
+    );
 
     try {
       // Get top-level comments (no parent)
@@ -231,7 +291,7 @@ export const getCommentsEndpoint: Endpoint = {
       console.error("[Endpoint/comments] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },

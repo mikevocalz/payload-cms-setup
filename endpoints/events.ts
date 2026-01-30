@@ -73,8 +73,18 @@ export const getEventEndpoint: Endpoint = {
         hostAvatarUrl = host.avatarUrl || host.avatar?.url;
       }
 
+      // Resolve cover image URL (prefer coverImageUrl, fallback to image, then coverImage relation)
+      const eventData = event as any;
+      let resolvedCoverImageUrl = eventData.coverImageUrl || eventData.image;
+      if (!resolvedCoverImageUrl && eventData.coverImage) {
+        if (typeof eventData.coverImage === "object") {
+          resolvedCoverImageUrl = eventData.coverImage.url;
+        }
+      }
+
       return Response.json({
         ...event,
+        coverImageUrl: resolvedCoverImageUrl,
         participantsCount: participantsResult.totalDocs,
         viewerRsvpStatus: viewerRsvp?.status || null,
         viewerHasTicket: !!viewerRsvp?.ticketToken,
