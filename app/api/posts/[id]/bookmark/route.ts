@@ -11,16 +11,10 @@ import { getPayload } from "payload";
 import configPromise from "@payload-config";
 import { headers } from "next/headers";
 
-// Helper to get current user from JWT token
-async function getCurrentUser(payload: any, authHeader: string | null) {
-  if (!authHeader || !authHeader.startsWith("JWT ")) {
-    return null;
-  }
-
-  const token = authHeader.replace("JWT ", "");
-
+// Helper to get current user from headers - MUST pass raw headersList like like endpoint
+async function getCurrentUser(payload: any, headersList: Headers) {
   try {
-    const { user } = await payload.auth({ headers: { authorization: `JWT ${token}` } });
+    const { user } = await payload.auth({ headers: headersList });
     return user;
   } catch (error) {
     console.error("[API/posts/bookmark] Auth error:", error);
@@ -30,7 +24,7 @@ async function getCurrentUser(payload: any, authHeader: string | null) {
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: postId } = await params;
   console.log("[API/posts/bookmark] POST request for post:", postId);
@@ -38,9 +32,8 @@ export async function POST(
   try {
     const payload = await getPayload({ config: configPromise });
     const headersList = await headers();
-    const authHeader = headersList.get("authorization");
 
-    const currentUser = await getCurrentUser(payload, authHeader);
+    const currentUser = await getCurrentUser(payload, headersList);
     if (!currentUser || !currentUser.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -75,19 +68,19 @@ export async function POST(
     const existingBookmark = await payload.find({
       collection: "bookmarks",
       where: {
-        and: [
-          { user: { equals: userId } },
-          { post: { equals: targetPostId } },
-        ],
+        and: [{ user: { equals: userId } }, { post: { equals: targetPostId } }],
       },
       limit: 1,
     });
 
-    const isBookmarked = existingBookmark.docs && existingBookmark.docs.length > 0;
+    const isBookmarked =
+      existingBookmark.docs && existingBookmark.docs.length > 0;
 
     if (action === "bookmark") {
       if (isBookmarked) {
-        console.log("[API/posts/bookmark] Already bookmarked, idempotent return");
+        console.log(
+          "[API/posts/bookmark] Already bookmarked, idempotent return",
+        );
         return Response.json({
           message: "Already bookmarked",
           bookmarked: true,
@@ -103,7 +96,10 @@ export async function POST(
           } as any,
         });
 
-        console.log("[API/posts/bookmark] Bookmark created:", { userId, postId: targetPostId });
+        console.log("[API/posts/bookmark] Bookmark created:", {
+          userId,
+          postId: targetPostId,
+        });
 
         return Response.json({
           message: "Post bookmarked successfully",
@@ -134,7 +130,11 @@ export async function POST(
         id: bookmarkId,
       });
 
-      console.log("[API/posts/bookmark] Bookmark deleted:", { bookmarkId, userId, postId: targetPostId });
+      console.log("[API/posts/bookmark] Bookmark deleted:", {
+        bookmarkId,
+        userId,
+        postId: targetPostId,
+      });
 
       return Response.json({
         message: "Post unbookmarked successfully",
@@ -145,23 +145,22 @@ export async function POST(
     console.error("[API/posts/bookmark] Error:", error);
     return Response.json(
       { error: error.message || "Internal server error" },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
     );
   }
 }
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: postId } = await params;
 
   try {
     const payload = await getPayload({ config: configPromise });
     const headersList = await headers();
-    const authHeader = headersList.get("authorization");
 
-    const currentUser = await getCurrentUser(payload, authHeader);
+    const currentUser = await getCurrentUser(payload, headersList);
     if (!currentUser || !currentUser.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -172,21 +171,85 @@ export async function GET(
     const existingBookmark = await payload.find({
       collection: "bookmarks",
       where: {
-        and: [
-          { user: { equals: userId } },
-          { post: { equals: targetPostId } },
-        ],
+        and: [{ user: { equals: userId } }, { post: { equals: targetPostId } }],
       },
       limit: 1,
     });
 
-    const isBookmarked = existingBookmark.docs && existingBookmark.docs.length > 0;
+    const isBookmarked =
+      existingBookmark.docs && existingBookmark.docs.length > 0;
     return Response.json({ bookmarked: isBookmarked });
   } catch (error: any) {
     console.error("[API/posts/bookmark] GET error:", error);
     return Response.json(
       { error: error.message || "Internal server error" },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
+    );
+  }
+}
+
+// DELETE /api/posts/:id/bookmark - Unbookmark a post (idempotent)
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id: postId } = await params;
+  console.log("[API/posts/bookmark] DELETE request for post:", postId);
+
+  try {
+    const payload = await getPayload({ config: configPromise });
+    const headersList = await headers();
+
+    const currentUser = await getCurrentUser(payload, headersList);
+    if (!currentUser || !currentUser.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = String(currentUser.id);
+    const targetPostId = String(postId);
+
+    // Check if bookmark exists
+    const existingBookmark = await payload.find({
+      collection: "bookmarks",
+      where: {
+        and: [{ user: { equals: userId } }, { post: { equals: targetPostId } }],
+      },
+      limit: 1,
+    });
+
+    const isBookmarked =
+      existingBookmark.docs && existingBookmark.docs.length > 0;
+
+    // IDEMPOTENT: If not bookmarked, return success anyway
+    if (!isBookmarked) {
+      console.log("[API/posts/bookmark] Not bookmarked, idempotent return");
+      return Response.json({
+        message: "Not bookmarked",
+        bookmarked: false,
+      });
+    }
+
+    const bookmarkId = (existingBookmark.docs[0] as any).id;
+    await payload.delete({
+      collection: "bookmarks",
+      id: bookmarkId,
+    });
+
+    console.log("[API/posts/bookmark] Bookmark deleted:", {
+      bookmarkId,
+      userId,
+      postId: targetPostId,
+    });
+
+    return Response.json({
+      message: "Post unbookmarked successfully",
+      bookmarked: false,
+    });
+  } catch (error: any) {
+    console.error("[API/posts/bookmark] DELETE error:", error);
+    return Response.json(
+      { error: error.message || "Internal server error" },
+      { status: error.status || 500 },
     );
   }
 }
