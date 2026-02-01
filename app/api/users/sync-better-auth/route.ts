@@ -39,20 +39,8 @@ export async function POST(request: NextRequest) {
 
       if (existingUsers.docs.length > 0) {
         payloadUser = existingUsers.docs[0];
-        
-        // Update the user with Better Auth info (don't update password for existing users)
-        const updateData: any = {};
-        if (username) updateData.username = username;
-        if (name) updateData.firstName = name;
-        if (avatar) updateData.avatar = avatar;
-        
-        if (Object.keys(updateData).length > 0) {
-          payloadUser = await payload.update({
-            collection: "users",
-            id: payloadUser.id,
-            data: updateData,
-          });
-        }
+        // Don't update existing user - just use it as-is to avoid password validation
+        console.log("[Sync] Found existing Payload user:", payloadUser.id);
       } else {
         // Create new Payload user
         payloadUser = await payload.create({
