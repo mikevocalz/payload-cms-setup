@@ -104,3 +104,9 @@ export {
   getEventCommentsEndpoint,
   getEventTicketEndpoint,
 } from "./events";
+
+// Event Reviews
+export {
+  getEventReviewsEndpoint,
+  createEventReviewEndpoint,
+} from "./event-reviews";

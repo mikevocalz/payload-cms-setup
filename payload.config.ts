@@ -147,6 +147,10 @@ import {
   getEventCommentsEndpoint,
   getEventTicketEndpoint,
 } from "./endpoints/events";
+import {
+  getEventReviewsEndpoint,
+  createEventReviewEndpoint,
+} from "./endpoints/event-reviews";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -309,6 +313,9 @@ const config = buildConfig({
     createEventCommentEndpoint,
     getEventCommentsEndpoint,
     getEventTicketEndpoint,
+    // Event Reviews
+    getEventReviewsEndpoint,
+    createEventReviewEndpoint,
   ],
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
