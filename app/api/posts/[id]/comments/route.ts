@@ -18,7 +18,7 @@ export const runtime = 'nodejs';
 
 // Helper to get current user from JWT token
 async function getCurrentUser(payload: any, authHeader: string | null) {
-  if (!authHeader || !authHeader.startsWith("JWT ")) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }
 

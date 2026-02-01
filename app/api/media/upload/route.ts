@@ -21,7 +21,7 @@ const MAX_VIDEO_SIZE_MB = 100;
 const MAX_VIDEO_DURATION_SECONDS = 60;
 
 async function getCurrentUser(payload: any, authHeader: string | null) {
-  if (!authHeader || !authHeader.startsWith("JWT ")) return null;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const { user } = await payload.auth({ headers: { authorization: authHeader } });
     return user;

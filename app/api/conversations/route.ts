@@ -10,7 +10,7 @@ import configPromise from "@payload-config";
 import { headers } from "next/headers";
 
 async function getCurrentUser(payload: any, authHeader: string | null) {
-  if (!authHeader || !authHeader.startsWith("JWT ")) return null;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const { user } = await payload.auth({ headers: { authorization: authHeader } });
     return user;

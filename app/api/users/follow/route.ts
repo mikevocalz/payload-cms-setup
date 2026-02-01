@@ -15,7 +15,7 @@ async function getUser(req: Request) {
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
 
-  if (!authHeader?.startsWith("JWT ")) {
+  if (!authHeader?.startsWith("Bearer ")) {
     return null;
   }
 
