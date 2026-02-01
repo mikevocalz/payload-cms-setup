@@ -1,6 +1,6 @@
 /**
  * Posts Endpoints for Payload v3
- * 
+ *
  * POST /api/posts - Create post
  * GET /api/posts/feed - Get feed
  * GET /api/posts/:id - Get single post
@@ -32,7 +32,7 @@ export const createPostEndpoint: Endpoint = {
     if (!media || !Array.isArray(media) || media.length === 0) {
       return Response.json(
         { error: "At least one media item required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -41,13 +41,13 @@ export const createPostEndpoint: Endpoint = {
       if (!item.type || !["image", "video"].includes(item.type)) {
         return Response.json(
           { error: "Each media item must have type: 'image' or 'video'" },
-          { status: 400 }
+          { status: 400 },
         );
       }
       if (!item.url) {
         return Response.json(
           { error: "Each media item must have a url" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -67,7 +67,9 @@ export const createPostEndpoint: Endpoint = {
         });
 
         if (existing.totalDocs > 0) {
-          console.log("[Endpoint/posts] Duplicate post prevented by clientMutationId");
+          console.log(
+            "[Endpoint/posts] Duplicate post prevented by clientMutationId",
+          );
           return Response.json({
             ...existing.docs[0],
             deduplicated: true,
@@ -107,7 +109,7 @@ export const createPostEndpoint: Endpoint = {
       console.error("[Endpoint/posts] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -125,7 +127,10 @@ export const getFeedEndpoint: Endpoint = {
 
     const url = new URL(req.url || "", "http://localhost");
     const page = parseInt(url.searchParams.get("page") || "1", 10);
-    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 50);
+    const limit = Math.min(
+      parseInt(url.searchParams.get("limit") || "20", 10),
+      50,
+    );
 
     const userId = String(req.user.id);
 
@@ -141,7 +146,7 @@ export const getFeedEndpoint: Endpoint = {
       });
 
       const followingIds = following.docs.map((f: any) =>
-        typeof f.following === "object" ? f.following.id : f.following
+        typeof f.following === "object" ? f.following.id : f.following,
       );
 
       // Include own posts in feed
@@ -182,17 +187,31 @@ export const getFeedEndpoint: Endpoint = {
 
       const likedPostIds = new Set(
         likes.docs.map((l: any) =>
-          typeof l.post === "object" ? l.post.id : l.post
-        )
+          typeof l.post === "object" ? l.post.id : l.post,
+        ),
       );
       const bookmarkedPostIds = new Set(
         bookmarks.docs.map((b: any) =>
-          typeof b.post === "object" ? b.post.id : b.post
-        )
+          typeof b.post === "object" ? b.post.id : b.post,
+        ),
+      );
+
+      // CRITICAL: Fetch likes counts for all posts in feed
+      const likesCountPromises = postIds.map(async (postId: string) => {
+        const count = await req.payload.count({
+          collection: "likes",
+          where: { post: { equals: postId } },
+        });
+        return { postId, count: count.totalDocs };
+      });
+      const likesCounts = await Promise.all(likesCountPromises);
+      const likesCountMap = new Map(
+        likesCounts.map(({ postId, count }) => [postId, count]),
       );
 
       const enrichedPosts = posts.docs.map((post: any) => ({
         ...post,
+        likesCount: likesCountMap.get(post.id) || 0,
         isLiked: likedPostIds.has(post.id),
         isBookmarked: bookmarkedPostIds.has(post.id),
       }));
@@ -209,7 +228,7 @@ export const getFeedEndpoint: Endpoint = {
       console.error("[Endpoint/feed] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -267,8 +286,15 @@ export const getPostEndpoint: Endpoint = {
         isBookmarked = bookmark.totalDocs > 0;
       }
 
+      // CRITICAL: Compute likesCount for single post
+      const likesCountResult = await req.payload.count({
+        collection: "likes",
+        where: { post: { equals: postId } },
+      });
+
       return Response.json({
         ...post,
+        likesCount: likesCountResult.totalDocs,
         isLiked,
         isBookmarked,
       });
@@ -276,7 +302,7 @@ export const getPostEndpoint: Endpoint = {
       console.error("[Endpoint/posts] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -321,12 +347,13 @@ export const updatePostEndpoint: Endpoint = {
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
-      // Instagram parity: Only caption is editable
+      // Instagram parity: Only caption (content) is editable
       const updated = await req.payload.update({
         collection: "posts",
         id: postId,
         data: {
-          caption: body.caption,
+          content: body.caption || body.content,
+          editedAt: new Date().toISOString(),
         },
       });
 
@@ -335,7 +362,7 @@ export const updatePostEndpoint: Endpoint = {
       console.error("[Endpoint/posts] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
@@ -401,7 +428,7 @@ export const deletePostEndpoint: Endpoint = {
       console.error("[Endpoint/posts] Error:", err);
       return Response.json(
         { error: err.message || "Internal server error" },
-        { status: err.status || 500 }
+        { status: err.status || 500 },
       );
     }
   },
