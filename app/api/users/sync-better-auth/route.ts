@@ -8,21 +8,36 @@ import { auth } from "@/lib/auth";
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get the Better Auth session from the token
+    // Get the Better Auth session - can be from Authorization header or Cookie
     const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Missing or invalid authorization header" },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
+    let token: string | null = null;
     
-    // Verify the Better Auth session
-    const session = await auth.api.getSession({
-      headers: { cookie: `better-auth.session_token=${token}` }
-    });
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    }
+    
+    // Try to get session from Better Auth
+    let session;
+    
+    if (token) {
+      // Try using token as session token
+      try {
+        session = await auth.api.getSession({
+          headers: { 
+            cookie: `better-auth.session_token=${token}` 
+          }
+        });
+      } catch (e) {
+        console.log("[Sync] Token as session failed, trying request headers");
+      }
+    }
+    
+    // Fallback: use request headers directly (includes cookies)
+    if (!session || !session.user) {
+      session = await auth.api.getSession({
+        headers: request.headers
+      });
+    }
 
     if (!session || !session.user) {
       return NextResponse.json(
