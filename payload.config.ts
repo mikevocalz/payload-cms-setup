@@ -19,6 +19,7 @@ import { Blocks } from "./collections/Blocks";
 import { Posts } from "./collections/Posts";
 import { Stories } from "./collections/Stories";
 import { Media } from "./collections/Media";
+import { Uploads } from "./collections/Uploads";
 import { Comments } from "./collections/Comments";
 import { Reactions } from "./collections/Reactions";
 import { Hashtags } from "./collections/Hashtags";
@@ -193,6 +194,7 @@ const config = buildConfig({
     Posts,
     Stories,
     Media,
+    Uploads,
     Comments,
     Reactions,
     Hashtags,

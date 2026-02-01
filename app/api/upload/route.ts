@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@/payload.config";
 
-// Increase body size limit for file uploads
-export const maxDuration = 60; // Maximum duration in seconds
+export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
@@ -33,38 +32,36 @@ export async function POST(request: NextRequest) {
 
     console.log("[Upload] Received file:", file.name, file.type, file.size);
 
-    // Convert File to Buffer
+    // Convert File to base64 for database storage
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
 
-    // In Vercel environment, we need to handle uploads differently
-    // Store in database and serve via API instead of filesystem
+    // Store directly in a simple uploads collection (no Payload upload field)
     const doc = await payload.create({
-      collection: "media",
+      collection: "uploads",
       data: {
-        alt: file.name,
+        filename: file.name,
+        mimeType: file.type,
+        filesize: file.size,
+        data: base64,
         owner: user.id,
       },
-      file: {
-        data: buffer,
-        mimetype: file.type,
-        name: file.name,
-        size: file.size,
-      },
-      user,
-      disableVerifyEmail: true,
     });
 
-    console.log("[Upload] Media created:", doc.id);
+    console.log("[Upload] File stored:", doc.id);
 
-    // Construct the URL - use the API endpoint to serve the file
-    const mediaUrl = doc.url || `/api/media/${doc.id}`;
+    // Construct URL to serve the file
+    const fileUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://payload-cms-setup-gray.vercel.app'}/api/uploads/${doc.id}`;
 
     return NextResponse.json({
       success: true,
       doc: {
-        ...doc,
-        url: mediaUrl.startsWith('http') ? mediaUrl : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://payload-cms-setup-gray.vercel.app'}${mediaUrl}`,
+        id: doc.id,
+        filename: file.name,
+        url: fileUrl,
+        mimeType: file.type,
+        filesize: file.size,
       },
     });
   } catch (error: any) {
