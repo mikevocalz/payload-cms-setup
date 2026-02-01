@@ -97,6 +97,7 @@ export interface Config {
     events: Event;
     'event-rsvps': EventRsvp;
     'story-views': StoryView;
+    'event-comments': EventComment;
     pages: Page;
     categories: Category;
     'legal-pages': LegalPage;
@@ -137,6 +138,7 @@ export interface Config {
     events: EventsSelect<false> | EventsSelect<true>;
     'event-rsvps': EventRsvpsSelect<false> | EventRsvpsSelect<true>;
     'story-views': StoryViewsSelect<false> | StoryViewsSelect<true>;
+    'event-comments': EventCommentsSelect<false> | EventCommentsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'legal-pages': LegalPagesSelect<false> | LegalPagesSelect<true>;
@@ -774,9 +776,25 @@ export interface Event {
   location?: string | null;
   coverImage?: (number | null) | Media;
   /**
-   * External image URL for mobile app
+   * External image URL for mobile app (legacy)
    */
   image?: string | null;
+  /**
+   * Bunny CDN URL for cover image (preferred)
+   */
+  coverImageUrl?: string | null;
+  /**
+   * Gallery images (Bunny CDN URLs) - JSON array
+   */
+  images?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   price?: number | null;
   category?: ('music' | 'sports' | 'art' | 'food' | 'tech' | 'business' | 'health' | 'other') | null;
   likes?: number | null;
@@ -795,6 +813,10 @@ export interface EventRsvp {
   event: number | Event;
   user: number | User;
   status: 'going' | 'interested' | 'not_going';
+  /**
+   * Unique QR code token for ticket verification
+   */
+  ticketToken?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -808,6 +830,26 @@ export interface StoryView {
   user: number | User;
   createdAt: string;
   updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-comments".
+ */
+export interface EventComment {
+  id: number;
+  author: number | User;
+  event: number | Event;
+  /**
+   * Comment text (max 1000 characters)
+   */
+  content: string;
+  /**
+   * Parent comment (if this is a reply)
+   */
+  parent?: (number | null) | EventComment;
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1195,6 +1237,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'story-views';
         value: number | StoryView;
+      } | null)
+    | ({
+        relationTo: 'event-comments';
+        value: number | EventComment;
       } | null)
     | ({
         relationTo: 'pages';
@@ -1750,6 +1796,8 @@ export interface EventsSelect<T extends boolean = true> {
   location?: T;
   coverImage?: T;
   image?: T;
+  coverImageUrl?: T;
+  images?: T;
   price?: T;
   category?: T;
   likes?: T;
@@ -1767,6 +1815,7 @@ export interface EventRsvpsSelect<T extends boolean = true> {
   event?: T;
   user?: T;
   status?: T;
+  ticketToken?: T;
   createdAt?: T;
   updatedAt?: T;
 }
@@ -1779,6 +1828,19 @@ export interface StoryViewsSelect<T extends boolean = true> {
   user?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-comments_select".
+ */
+export interface EventCommentsSelect<T extends boolean = true> {
+  author?: T;
+  event?: T;
+  content?: T;
+  parent?: T;
+  likes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

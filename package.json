@@ -69,6 +69,7 @@
     "embla-carousel-react": "8.5.1",
     "graphql": "latest",
     "input-otp": "1.4.1",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.454.0",
     "mongodb": "latest",
     "mysql2": "latest",
@@ -85,6 +86,7 @@
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
     "sharp": "0.34.5",
+    "socket.io": "^4.8.3",
     "solid-js": "latest",
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.3.1",
@@ -95,6 +97,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
