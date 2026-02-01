@@ -34,11 +34,19 @@ export async function POST(request: NextRequest) {
         name,
         ...(username && { username })
       },
-      asResponse: true,
     });
 
-    console.log("[Better Auth] Sign-up result status:", result.status);
-    return result;
+    console.log("[Better Auth] Sign-up result:", result);
+    
+    // Return as JSON Response
+    if (result.error) {
+      return NextResponse.json(
+        { error: result.error.message || "Sign-up failed" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(result.data || result, { status: 200 });
   } catch (error: any) {
     console.error("[Better Auth] Sign-up error:", error);
     return NextResponse.json(

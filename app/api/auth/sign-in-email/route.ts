@@ -22,11 +22,19 @@ export async function POST(request: NextRequest) {
     // Use Better Auth's signIn method
     const result = await auth.api.signInEmail({
       body: { email, password },
-      asResponse: true,
     });
 
-    console.log("[Better Auth] Sign-in result status:", result.status);
-    return result;
+    console.log("[Better Auth] Sign-in result:", result);
+    
+    // Return as JSON Response
+    if (result.error) {
+      return NextResponse.json(
+        { error: result.error.message || "Invalid email or password" },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(result.data || result, { status: 200 });
   } catch (error: any) {
     console.error("[Better Auth] Sign-in error:", error);
     return NextResponse.json(
