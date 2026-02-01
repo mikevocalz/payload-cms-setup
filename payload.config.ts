@@ -226,6 +226,19 @@ const config = buildConfig({
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
+  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || "https://payload-cms-setup-gray.vercel.app",
+  routes: {
+    api: "/api",
+    admin: "/admin",
+  },
+  cors: [
+    "https://payload-cms-setup-gray.vercel.app",
+    process.env.NEXT_PUBLIC_SERVER_URL || "",
+  ].filter(Boolean),
+  csrf: [
+    "https://payload-cms-setup-gray.vercel.app",
+    process.env.NEXT_PUBLIC_SERVER_URL || "",
+  ].filter(Boolean),
   endpoints: [
     // Follow
     followEndpoint,
