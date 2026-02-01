@@ -10,6 +10,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, name, username } = body;
 
+    console.log("[Better Auth] Sign-up request:", { email, name, username });
+
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -17,12 +19,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!name) {
+      return NextResponse.json(
+        { error: "Name is required" },
+        { status: 400 }
+      );
+    }
+
     // Use Better Auth's signUp method
     const result = await auth.api.signUpEmail({
-      body: { email, password, name, username },
-      headers: request.headers,
+      body: { 
+        email, 
+        password, 
+        name,
+        ...(username && { username })
+      },
+      asResponse: true,
     });
 
+    console.log("[Better Auth] Sign-up result status:", result.status);
     return result;
   } catch (error: any) {
     console.error("[Better Auth] Sign-up error:", error);
