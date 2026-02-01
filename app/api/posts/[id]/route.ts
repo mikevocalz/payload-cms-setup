@@ -3,6 +3,7 @@ import { getPayload } from "@/lib/payload";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0; // Disable caching
 
 export async function GET(
   request: NextRequest,
