@@ -96,6 +96,7 @@ export { uploadMediaEndpoint, uploadConfigEndpoint } from "./media-upload";
 
 // Events (RSVP, Participants, Comments, Tickets)
 export {
+  getEventsListEndpoint,
   getEventEndpoint,
   rsvpEventEndpoint,
   getEventParticipantsEndpoint,

@@ -139,6 +139,7 @@ import {
   uploadConfigEndpoint,
 } from "./endpoints/media-upload";
 import {
+  getEventsListEndpoint,
   getEventEndpoint,
   rsvpEventEndpoint,
   getEventParticipantsEndpoint,
@@ -301,6 +302,7 @@ const config = buildConfig({
     uploadMediaEndpoint,
     uploadConfigEndpoint,
     // Events (RSVP, Participants, Comments, Tickets)
+    getEventsListEndpoint,
     getEventEndpoint,
     rsvpEventEndpoint,
     getEventParticipantsEndpoint,

@@ -1,6 +1,7 @@
 /**
  * Events Endpoints for Payload v3
  *
+ * GET /api/events - Get events list (upcoming, past, all)
  * GET /api/events/:id - Get event details with organizer/participants
  * POST /api/events/:id/rsvp - RSVP to event (join/leave)
  * GET /api/events/:id/participants - Get event participants list
@@ -16,6 +17,60 @@ import crypto from "crypto";
 function generateTicketToken(): string {
   return crypto.randomBytes(16).toString("hex");
 }
+
+export const getEventsListEndpoint: Endpoint = {
+  path: "/events",
+  method: "get",
+  handler: async (req) => {
+    console.log("[Endpoint/events] GET events list");
+
+    const url = new URL(req.url || "", "http://localhost");
+    const category = url.searchParams.get("category");
+    const filter = url.searchParams.get("filter"); // "upcoming", "past", "all"
+    const page = parseInt(url.searchParams.get("page") || "1", 10);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10), 100);
+
+    try {
+      const where: any = {};
+
+      // Filter by category
+      if (category && category !== "all") {
+        where.category = { equals: category };
+      }
+
+      // Filter by date
+      if (filter === "upcoming") {
+        where.date = { greater_than: new Date().toISOString() };
+      } else if (filter === "past") {
+        where.date = { less_than: new Date().toISOString() };
+      }
+
+      const events = await req.payload.find({
+        collection: "events",
+        where: Object.keys(where).length > 0 ? where : undefined,
+        sort: filter === "past" ? "-date" : "date",
+        page,
+        limit,
+        depth: 2,
+      });
+
+      return Response.json({
+        docs: events.docs,
+        totalDocs: events.totalDocs,
+        totalPages: events.totalPages,
+        page: events.page,
+        hasNextPage: events.hasNextPage,
+        hasPrevPage: events.hasPrevPage,
+      });
+    } catch (err: any) {
+      console.error("[Endpoint/events] Error:", err);
+      return Response.json(
+        { error: err.message || "Internal server error" },
+        { status: err.status || 500 }
+      );
+    }
+  },
+};
 
 export const getEventEndpoint: Endpoint = {
   path: "/events/:id",
