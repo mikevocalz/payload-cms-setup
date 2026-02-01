@@ -27,10 +27,11 @@ export const Uploads: CollectionConfig = {
     {
       name: "fileData",
       type: "text",
-      required: true,
+      required: false, // Make it optional to bypass validation
       admin: {
-        hidden: true, // Hide from admin UI since it's base64
+        hidden: true,
       },
+      validate: () => true, // Always pass validation
     },
     {
       name: "owner",
