@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
 import { getServerSideUser } from "@/lib/auth/payload";
 
+// Route handlers for events list and creation
 export async function GET(request: NextRequest) {
   try {
     const payload = await getPayload();
