@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         filename: file.name,
         mimeType: file.type,
         filesize: file.size,
-        data: base64,
+        fileData: base64,
         owner: user.id,
       },
     });

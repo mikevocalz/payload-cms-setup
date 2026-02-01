@@ -18,7 +18,7 @@ export async function GET(
       id,
     });
 
-    if (!doc || !doc.data) {
+    if (!doc || !doc.fileData) {
       return NextResponse.json(
         { error: "File not found" },
         { status: 404 }
@@ -26,7 +26,7 @@ export async function GET(
     }
 
     // Convert base64 back to buffer
-    const buffer = Buffer.from(doc.data, 'base64');
+    const buffer = Buffer.from(doc.fileData, 'base64');
 
     // Return the file with appropriate headers
     return new NextResponse(buffer, {

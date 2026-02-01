@@ -25,7 +25,7 @@ export const Uploads: CollectionConfig = {
       required: true,
     },
     {
-      name: "data",
+      name: "fileData",
       type: "text",
       required: true,
       admin: {
