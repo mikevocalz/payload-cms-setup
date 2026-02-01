@@ -40,40 +40,37 @@ export async function POST(request: NextRequest) {
 
       if (existingUsers.docs.length > 0) {
         payloadUser = existingUsers.docs[0];
-        // Don't update existing user - just use it as-is to avoid password validation
         console.log("[Sync] Found existing Payload user:", payloadUser.id);
       } else {
-        // Create new Payload user
+        // Create new Payload user with a known temporary password
+        const tempPassword = `temp_${Math.random().toString(36).substring(2, 15)}`;
         payloadUser = await payload.create({
           collection: "users",
           data: {
             email,
             username: username || email.split("@")[0],
             firstName: name || "User",
-            password: Math.random().toString(36).substring(2, 15), // Random password (they'll use Better Auth)
+            password: tempPassword,
             role: "Basic",
             userType: "Regular",
           },
         });
+        console.log("[Sync] Created new Payload user:", payloadUser.id);
       }
 
-      // Generate Payload JWT token manually to avoid password validation
-      const secret = process.env.PAYLOAD_SECRET || "";
-      const tokenData = {
-        id: payloadUser.id,
-        email: payloadUser.email,
+      // Generate a proper Payload JWT token
+      // Use Payload's built-in token generation
+      const tokenResult = await payload.login({
         collection: "users",
-      };
-      
-      const payloadToken = jwt.sign(tokenData, secret, {
-        expiresIn: "30d",
+        data: { id: payloadUser.id },
+        req: request as any,
       });
 
       return NextResponse.json({
         success: true,
         betterAuthId: betterAuthId,
         payloadUserId: payloadUser.id,
-        payloadToken: payloadToken, // Return manually generated JWT
+        payloadToken: tokenResult.token,
         user: {
           id: String(payloadUser.id),
           email: payloadUser.email,
