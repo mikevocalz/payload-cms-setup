@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
+import jwt from "jsonwebtoken";
 
 /**
  * Sync Better Auth user with Payload CMS user
@@ -56,17 +57,23 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Generate Payload JWT token for this user
-      const token = await payload.login({
+      // Generate Payload JWT token manually to avoid password validation
+      const secret = process.env.PAYLOAD_SECRET || "";
+      const tokenData = {
+        id: payloadUser.id,
+        email: payloadUser.email,
         collection: "users",
-        data: { email, id: payloadUser.id },
+      };
+      
+      const payloadToken = jwt.sign(tokenData, secret, {
+        expiresIn: "30d",
       });
 
       return NextResponse.json({
         success: true,
         betterAuthId: betterAuthId,
         payloadUserId: payloadUser.id,
-        payloadToken: token.token, // Return Payload JWT token
+        payloadToken: payloadToken, // Return manually generated JWT
         user: {
           id: String(payloadUser.id),
           email: payloadUser.email,
