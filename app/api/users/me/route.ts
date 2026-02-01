@@ -1,12 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
-import { getServerSideUser } from "@/lib/auth/payload";
 
 // Route handlers for current user profile
 export async function GET(request: NextRequest) {
   try {
     const payload = await getPayload();
-    const user = await getServerSideUser(request);
+    const { user } = await payload.auth({ headers: request.headers });
 
     if (!user) {
       return NextResponse.json(
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const payload = await getPayload();
-    const user = await getServerSideUser(request);
+    const { user } = await payload.auth({ headers: request.headers });
 
     if (!user) {
       return NextResponse.json(

@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
-import { getServerSideUser } from "@/lib/auth/payload";
 
 // Route handlers for events list and creation
 export async function GET(request: NextRequest) {
@@ -55,7 +54,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload();
-    const user = await getServerSideUser(request);
+    const { user } = await payload.auth({ headers: request.headers });
 
     if (!user) {
       return NextResponse.json(
