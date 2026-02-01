@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
+import { getServerSideUser } from "@/lib/auth/payload";
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,6 +46,38 @@ export async function GET(request: NextRequest) {
     console.error("[API/events] Error:", error);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
+      { status: error.status || 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const payload = await getPayload();
+    const user = await getServerSideUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+
+    const event = await payload.create({
+      collection: "events",
+      data: {
+        ...body,
+        host: user.id,
+      },
+    });
+
+    return NextResponse.json(event, { status: 201 });
+  } catch (error: any) {
+    console.error("[API/events] POST Error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to create event" },
       { status: error.status || 500 }
     );
   }
