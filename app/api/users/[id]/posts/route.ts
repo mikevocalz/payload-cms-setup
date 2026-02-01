@@ -4,14 +4,14 @@
  */
 
 import { getPayload } from "payload";
-import config from "@/payload.config";
+import configPromise from "@payload-config";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: userId } = await params;
-  const payload = await getPayload({ config });
+  const payload = await getPayload({ config: configPromise });
 
   const url = new URL(req.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
