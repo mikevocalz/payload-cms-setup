@@ -65,10 +65,17 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // Generate Payload JWT token for this user
+      const token = await payload.login({
+        collection: "users",
+        data: { email, id: payloadUser.id },
+      });
+
       return NextResponse.json({
         success: true,
         betterAuthId: betterAuthId,
         payloadUserId: payloadUser.id,
+        payloadToken: token.token, // Return Payload JWT token
         user: {
           id: String(payloadUser.id),
           email: payloadUser.email,
