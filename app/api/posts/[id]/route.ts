@@ -8,6 +8,7 @@ export async function GET(
   const postId = params.id;
 
   try {
+    console.log(`[API/posts/${postId}] GET request received`);
     const payload = await getPayload();
     
     const post = await payload.findByID({
@@ -16,7 +17,15 @@ export async function GET(
       depth: 2,
     });
 
+    console.log(`[API/posts/${postId}] Result:`, post ? `Found (deletedAt: ${(post as any).deletedAt})` : "Not found");
+
     if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Check if soft deleted
+    if ((post as any).deletedAt) {
+      console.log(`[API/posts/${postId}] Post is soft deleted`);
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
