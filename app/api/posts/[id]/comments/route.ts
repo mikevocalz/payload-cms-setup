@@ -12,6 +12,10 @@ import { getPayload } from "payload";
 import configPromise from "@payload-config";
 import { headers } from "next/headers";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Helper to get current user from JWT token
 async function getCurrentUser(payload: any, authHeader: string | null) {
   if (!authHeader || !authHeader.startsWith("JWT ")) {

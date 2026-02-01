@@ -7,6 +7,10 @@
 import { getPayload } from "payload";
 import configPromise from "@payload-config";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
