@@ -71,25 +71,19 @@ export async function POST(request: NextRequest) {
         console.log("[Sync] Created new Payload user:", payloadUser.id);
       }
 
-      // Get real Payload JWT by logging in via HTTP endpoint
-      const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Use Payload's internal login method to get real JWT
+      const loginResult = await payload.login({
+        collection: "users",
+        data: {
           email: payloadUser.email,
           password: SYNC_PASSWORD,
-        }),
+        },
       });
-
-      if (!loginResponse.ok) {
-        throw new Error(`Login failed: ${loginResponse.status}`);
-      }
-
-      const loginData = await loginResponse.json();
-      const payloadToken = loginData.token;
+      
+      const payloadToken = loginResult.token;
       
       if (!payloadToken) {
-        throw new Error("No token returned from login");
+        throw new Error("No token returned from Payload login");
       }
 
       console.log("[Sync] Got Payload JWT for user:", payloadUser.id);
