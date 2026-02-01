@@ -304,10 +304,13 @@ const config = buildConfig({
         process.env.DATABASE_URI ||
         process.env.DATABASE_URL ||
         process.env.POSTGRES_URL,
-      // Limit pool size for serverless (Supabase Session mode has limits)
-      max: 3,
-      idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 5000,
+      // SERVERLESS OPTIMIZED: Low pool, long timeouts for Vercel cold starts
+      max: 2, // Reduced to prevent connection exhaustion
+      idleTimeoutMillis: 30000, // 30s idle before closing
+      connectionTimeoutMillis: 20000, // 20s timeout (Vercel function has 10-60s max)
+      ssl: {
+        rejectUnauthorized: false, // Supabase pooler requires SSL
+      },
     },
     // Note: In production, schema must match via migrations or DB already synced
     // Disable push mode (default) and use migrations or pre-synced DB
