@@ -1,6 +1,7 @@
 /**
  * User Posts API Route
  * GET /api/users/:id/posts
+ * Updated: 2026-02-01 - Forced rebuild for JSON response
  */
 
 import { getPayload } from "payload";

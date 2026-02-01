@@ -5,6 +5,7 @@
  * POST /api/posts/:id/comments - Create a comment on a post
  *
  * STABILIZED: Uses `comments` collection with threading support.
+ * Updated: 2026-02-01 - Forced rebuild for JSON response
  */
 
 import { getPayload } from "payload";
