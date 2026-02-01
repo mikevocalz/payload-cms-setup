@@ -58,9 +58,7 @@ export async function POST(request: NextRequest) {
         console.log("[Sync] Created new Payload user:", payloadUser.id);
       }
 
-      //
-
- Generate Payload API key for this user instead of JWT
+      // Generate Payload API key for this user instead of JWT
       // API keys are more reliable for programmatic access
       const apiKeyData = await payload.update({
         collection: "users",
