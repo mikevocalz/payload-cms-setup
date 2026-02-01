@@ -52,11 +52,17 @@ export async function GET(
         id: postId,
       });
     } catch {
-      return Response.json({ error: "Post not found" }, { status: 404 });
+      return Response.json({ error: "Post not found" }, { 
+        status: 404,
+        headers: { "Cache-Control": "no-store, max-age=0" }
+      });
     }
 
     if (!targetPost) {
-      return Response.json({ error: "Post not found" }, { status: 404 });
+      return Response.json({ error: "Post not found" }, { 
+        status: 404,
+        headers: { "Cache-Control": "no-store, max-age=0" }
+      });
     }
 
     // Get comments for this post
@@ -91,12 +97,17 @@ export async function GET(
       });
     }
 
-    return Response.json(comments);
+    return Response.json(comments, {
+      headers: { "Cache-Control": "no-store, max-age=0" }
+    });
   } catch (error: any) {
     console.error("[API/posts/comments] GET error:", error);
     return Response.json(
       { error: error.message || "Internal server error" },
-      { status: error.status || 500 },
+      { 
+        status: error.status || 500,
+        headers: { "Cache-Control": "no-store, max-age=0" }
+      },
     );
   }
 }

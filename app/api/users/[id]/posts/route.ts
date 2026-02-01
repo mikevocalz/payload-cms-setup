@@ -35,12 +35,17 @@ export async function GET(
       depth: 2,
     });
 
-    return Response.json(posts);
+    return Response.json(posts, {
+      headers: { "Cache-Control": "no-store, max-age=0" }
+    });
   } catch (err: any) {
     console.error("[API/user-posts] Error:", err);
     return Response.json(
       { error: err.message || "Internal server error" },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: { "Cache-Control": "no-store, max-age=0" }
+      }
     );
   }
 }
