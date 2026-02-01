@@ -1,77 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
-import { auth } from "@/lib/auth";
 
 /**
  * Sync Better Auth user with Payload CMS user
  * Creates or finds a Payload user matching the Better Auth user's email
+ * 
+ * This endpoint expects the Better Auth user data in the request body
+ * (sent from the mobile app after login/signup)
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get the Better Auth session - try multiple methods
-    const authHeader = request.headers.get("authorization");
-    let token: string | null = null;
+    const body = await request.json();
+    const { email, name, username, avatar, betterAuthId } = body;
     
-    if (authHeader?.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    }
-    
-    // Method 1: Try to verify token with Better Auth directly
-    let betterAuthUser = null;
-    
-    if (token) {
-      try {
-        // Use Better Auth's session verification API
-        const sessionData = await auth.api.getSession({
-          headers: {
-            authorization: `Bearer ${token}`,
-          }
-        });
-        
-        if (sessionData?.user) {
-          betterAuthUser = sessionData.user;
-        }
-      } catch (e) {
-        console.log("[Sync] Bearer token verification failed, trying cookie format");
-      }
-    }
-    
-    // Method 2: Try with cookie format
-    if (!betterAuthUser && token) {
-      try {
-        const sessionData = await auth.api.getSession({
-          headers: {
-            cookie: `better-auth.session_token=${token}`,
-          }
-        });
-        
-        if (sessionData?.user) {
-          betterAuthUser = sessionData.user;
-        }
-      } catch (e) {
-        console.log("[Sync] Cookie format verification failed");
-      }
-    }
-    
-    // Method 3: Try with request headers directly
-    if (!betterAuthUser) {
-      try {
-        const sessionData = await auth.api.getSession({
-          headers: request.headers,
-        });
-        
-        if (sessionData?.user) {
-          betterAuthUser = sessionData.user;
-        }
-      } catch (e) {
-        console.log("[Sync] Request headers verification failed");
-      }
-    }
-
-    if (!betterAuthUser) {
+    if (!email) {
       return NextResponse.json(
-        { error: "Invalid session - could not verify Better Auth token" },
-        { status: 401 }
+        { error: "Email is required" },
+        { status: 400 }
       );
     }
 
@@ -86,7 +31,7 @@ export async function POST(request: NextRequest) {
         collection: "users",
         where: {
           email: {
-            equals: betterAuthUser.email,
+            equals: email,
           },
         },
         limit: 1,
@@ -100,9 +45,9 @@ export async function POST(request: NextRequest) {
           collection: "users",
           id: payloadUser.id,
           data: {
-            username: betterAuthUser.username || payloadUser.username,
-            firstName: betterAuthUser.name || payloadUser.firstName,
-            avatar: betterAuthUser.image || payloadUser.avatar,
+            ...(username && { username }),
+            ...(name && { firstName: name }),
+            ...(avatar && { avatar }),
           },
         });
       } else {
@@ -110,9 +55,9 @@ export async function POST(request: NextRequest) {
         payloadUser = await payload.create({
           collection: "users",
           data: {
-            email: betterAuthUser.email,
-            username: betterAuthUser.username || betterAuthUser.email.split("@")[0],
-            firstName: betterAuthUser.name || "User",
+            email,
+            username: username || email.split("@")[0],
+            firstName: name || "User",
             password: Math.random().toString(36).substring(2, 15), // Random password (they'll use Better Auth)
             role: "Basic",
             userType: "Regular",
@@ -122,7 +67,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        betterAuthId: betterAuthUser.id,
+        betterAuthId: betterAuthId,
         payloadUserId: payloadUser.id,
         user: {
           id: String(payloadUser.id),
