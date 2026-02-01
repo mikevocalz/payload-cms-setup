@@ -14,10 +14,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log("[API/users/login] Attempting login for:", email);
+
     // Use Payload's built-in login
     const result = await payload.login({
       collection: "users",
       data: { email, password },
+    });
+
+    console.log("[API/users/login] Login result:", { 
+      hasUser: !!result.user, 
+      hasToken: !!result.token,
+      userId: result.user?.id 
     });
 
     if (!result.user || !result.token) {
@@ -34,6 +42,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("[API/users/login] Error:", error);
+    console.error("[API/users/login] Error message:", error.message);
     return NextResponse.json(
       { error: error.message || "Login failed" },
       { status: error.status || 500 }
