@@ -58,32 +58,27 @@ export async function POST(request: NextRequest) {
         console.log("[Sync] Created new Payload user:", payloadUser.id);
       }
 
-      // Generate Payload JWT token manually
-      // Payload uses jsonwebtoken with these standard claims
-      const secret = process.env.PAYLOAD_SECRET;
-      if (!secret) {
-        throw new Error("PAYLOAD_SECRET not configured");
-      }
+      //
 
-      const token = jwt.sign(
-        {
-          id: payloadUser.id,
-          email: payloadUser.email,
-          collection: "users",
+ Generate Payload API key for this user instead of JWT
+      // API keys are more reliable for programmatic access
+      const apiKeyData = await payload.update({
+        collection: "users",
+        id: payloadUser.id,
+        data: {
+          enableAPIKey: true,
+          apiKey: `payload_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
         },
-        secret,
-        {
-          expiresIn: 60 * 60 * 24 * 30, // 30 days
-        }
-      );
+      });
 
-      console.log("[Sync] Generated token for user:", payloadUser.id);
+      const payloadToken = apiKeyData.apiKey;
+      console.log("[Sync] Generated API key for user:", payloadUser.id);
 
       return NextResponse.json({
         success: true,
         betterAuthId: betterAuthId,
         payloadUserId: payloadUser.id,
-        payloadToken: token,
+        payloadToken: payloadToken,
         user: {
           id: String(payloadUser.id),
           email: payloadUser.email,
