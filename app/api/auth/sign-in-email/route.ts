@@ -10,6 +10,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
 
+    console.log("[Better Auth] Sign-in request:", { email });
+
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -20,9 +22,10 @@ export async function POST(request: NextRequest) {
     // Use Better Auth's signIn method
     const result = await auth.api.signInEmail({
       body: { email, password },
-      headers: request.headers,
+      asResponse: true,
     });
 
+    console.log("[Better Auth] Sign-in result status:", result.status);
     return result;
   } catch (error: any) {
     console.error("[Better Auth] Sign-in error:", error);
