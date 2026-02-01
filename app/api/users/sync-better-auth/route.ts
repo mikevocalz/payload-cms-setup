@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get the Better Auth session - can be from Authorization header or Cookie
+    // Get the Better Auth session - try multiple methods
     const authHeader = request.headers.get("authorization");
     let token: string | null = null;
     
@@ -16,37 +16,65 @@ export async function POST(request: NextRequest) {
       token = authHeader.substring(7);
     }
     
-    // Try to get session from Better Auth
-    let session;
+    // Method 1: Try to verify token with Better Auth directly
+    let betterAuthUser = null;
     
     if (token) {
-      // Try using token as session token
       try {
-        session = await auth.api.getSession({
-          headers: { 
-            cookie: `better-auth.session_token=${token}` 
+        // Use Better Auth's session verification API
+        const sessionData = await auth.api.getSession({
+          headers: {
+            authorization: `Bearer ${token}`,
           }
         });
+        
+        if (sessionData?.user) {
+          betterAuthUser = sessionData.user;
+        }
       } catch (e) {
-        console.log("[Sync] Token as session failed, trying request headers");
+        console.log("[Sync] Bearer token verification failed, trying cookie format");
       }
     }
     
-    // Fallback: use request headers directly (includes cookies)
-    if (!session || !session.user) {
-      session = await auth.api.getSession({
-        headers: request.headers
-      });
+    // Method 2: Try with cookie format
+    if (!betterAuthUser && token) {
+      try {
+        const sessionData = await auth.api.getSession({
+          headers: {
+            cookie: `better-auth.session_token=${token}`,
+          }
+        });
+        
+        if (sessionData?.user) {
+          betterAuthUser = sessionData.user;
+        }
+      } catch (e) {
+        console.log("[Sync] Cookie format verification failed");
+      }
+    }
+    
+    // Method 3: Try with request headers directly
+    if (!betterAuthUser) {
+      try {
+        const sessionData = await auth.api.getSession({
+          headers: request.headers,
+        });
+        
+        if (sessionData?.user) {
+          betterAuthUser = sessionData.user;
+        }
+      } catch (e) {
+        console.log("[Sync] Request headers verification failed");
+      }
     }
 
-    if (!session || !session.user) {
+    if (!betterAuthUser) {
       return NextResponse.json(
-        { error: "Invalid session" },
+        { error: "Invalid session - could not verify Better Auth token" },
         { status: 401 }
       );
     }
 
-    const betterAuthUser = session.user;
     const payload = await getPayload();
 
     // Find or create Payload user with matching email
