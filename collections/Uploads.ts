@@ -26,7 +26,7 @@ export const Uploads: CollectionConfig = {
     },
     {
       name: "data",
-      type: "textarea",
+      type: "text",
       required: true,
       admin: {
         hidden: true, // Hide from admin UI since it's base64

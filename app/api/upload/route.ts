@@ -32,10 +32,25 @@ export async function POST(request: NextRequest) {
 
     console.log("[Upload] Received file:", file.name, file.type, file.size);
 
+    // Check file size limit (Vercel has 4.5MB limit for serverless functions)
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB
+    if (file.size > MAX_SIZE) {
+      console.error("[Upload] File too large:", file.size, "bytes");
+      return NextResponse.json(
+        { 
+          success: false,
+          error: `File too large. Maximum size is ${MAX_SIZE / 1024 / 1024}MB`,
+        },
+        { status: 400 }
+      );
+    }
+
     // Convert File to base64 for database storage
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString('base64');
+
+    console.log("[Upload] Base64 length:", base64.length, "characters");
 
     // Store directly in a simple uploads collection (no Payload upload field)
     const doc = await payload.create({
