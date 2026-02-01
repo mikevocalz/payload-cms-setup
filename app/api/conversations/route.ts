@@ -7,33 +7,19 @@
 
 import { getPayload } from "payload";
 import configPromise from "@payload-config";
-import { headers } from "next/headers";
-
-async function getCurrentUser(payload: any, authHeader: string | null) {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
-  try {
-    const { user } = await payload.auth({ headers: { authorization: authHeader } });
-    return user;
-  } catch (error) {
-    console.error("[API/conversations] Auth error:", error);
-    return null;
-  }
-}
 
 export async function GET(request: Request) {
   console.log("[API/conversations] GET request received");
 
   try {
     const payload = await getPayload({ config: configPromise });
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
+    const { user } = await payload.auth({ headers: request.headers });
 
-    const currentUser = await getCurrentUser(payload, authHeader);
-    if (!currentUser || !currentUser.id) {
+    if (!user || !user.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = String(currentUser.id);
+    const userId = String(user.id);
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1", 10);
     const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 50);
@@ -61,15 +47,13 @@ export async function POST(request: Request) {
 
   try {
     const payload = await getPayload({ config: configPromise });
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
+    const { user } = await payload.auth({ headers: request.headers });
 
-    const currentUser = await getCurrentUser(payload, authHeader);
-    if (!currentUser || !currentUser.id) {
+    if (!user || !user.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = String(currentUser.id);
+    const userId = String(user.id);
 
     let body: { participantIds: string[]; isGroup?: boolean; groupName?: string };
     try {
