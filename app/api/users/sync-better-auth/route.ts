@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "@/lib/payload";
-import jwt from "jsonwebtoken";
 
 /**
  * Sync Better Auth user with Payload CMS user
@@ -38,19 +37,33 @@ export async function POST(request: NextRequest) {
         limit: 1,
       });
 
+      // Fixed password for all Better Auth synced users
+      const SYNC_PASSWORD = process.env.BETTER_AUTH_SYNC_PASSWORD || "BetterAuth_Sync_2024!";
+      
       if (existingUsers.docs.length > 0) {
         payloadUser = existingUsers.docs[0];
         console.log("[Sync] Found existing Payload user:", payloadUser.id);
+        
+        // Update existing user's password to sync password (in case it was different)
+        try {
+          await payload.update({
+            collection: "users",
+            id: payloadUser.id,
+            data: { password: SYNC_PASSWORD },
+          });
+          console.log("[Sync] Updated user password to sync password");
+        } catch (pwdError) {
+          console.warn("[Sync] Could not update password:", pwdError);
+        }
       } else {
-        // Create new Payload user with a known temporary password
-        const tempPassword = `temp_${Math.random().toString(36).substring(2, 15)}`;
+        // Create new Payload user with fixed sync password
         payloadUser = await payload.create({
           collection: "users",
           data: {
             email,
             username: username || email.split("@")[0],
             firstName: name || "User",
-            password: tempPassword,
+            password: SYNC_PASSWORD,
             role: "Basic",
             userType: "Regular",
           },
@@ -58,19 +71,28 @@ export async function POST(request: NextRequest) {
         console.log("[Sync] Created new Payload user:", payloadUser.id);
       }
 
-      // Generate Payload API key for this user instead of JWT
-      // API keys are more reliable for programmatic access
-      const apiKeyData = await payload.update({
-        collection: "users",
-        id: payloadUser.id,
-        data: {
-          enableAPIKey: true,
-          apiKey: `payload_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-        },
+      // Get real Payload JWT by logging in via HTTP endpoint
+      const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: payloadUser.email,
+          password: SYNC_PASSWORD,
+        }),
       });
 
-      const payloadToken = apiKeyData.apiKey;
-      console.log("[Sync] Generated API key for user:", payloadUser.id);
+      if (!loginResponse.ok) {
+        throw new Error(`Login failed: ${loginResponse.status}`);
+      }
+
+      const loginData = await loginResponse.json();
+      const payloadToken = loginData.token;
+      
+      if (!payloadToken) {
+        throw new Error("No token returned from login");
+      }
+
+      console.log("[Sync] Got Payload JWT for user:", payloadUser.id);
 
       return NextResponse.json({
         success: true,
