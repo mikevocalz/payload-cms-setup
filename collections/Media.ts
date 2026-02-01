@@ -9,7 +9,10 @@ export const Media: CollectionConfig = {
     delete: ({ req: { user } }) => !!user,
   },
   upload: {
-    staticDir: "media",
+    // Store files in database for Vercel compatibility
+    // No staticDir - files stored as base64 in DB
+    adminThumbnail: "thumbnail",
+    mimeTypes: ["image/*", "video/*", "audio/*"],
     imageSizes: [
       {
         name: "thumbnail",
@@ -30,8 +33,6 @@ export const Media: CollectionConfig = {
         position: "centre",
       },
     ],
-    adminThumbnail: "thumbnail",
-    mimeTypes: ["image/*", "video/*", "audio/*"],
   },
   fields: [
     {

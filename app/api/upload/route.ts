@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create media document via Payload
+    // In Vercel environment, we need to handle uploads differently
+    // Store in database and serve via API instead of filesystem
     const doc = await payload.create({
       collection: "media",
       data: {
@@ -51,16 +52,24 @@ export async function POST(request: NextRequest) {
         size: file.size,
       },
       user,
+      disableVerifyEmail: true,
     });
 
-    console.log("[Upload] Media created:", doc.id, doc.url);
+    console.log("[Upload] Media created:", doc.id);
+
+    // Construct the URL - use the API endpoint to serve the file
+    const mediaUrl = doc.url || `/api/media/${doc.id}`;
 
     return NextResponse.json({
       success: true,
-      doc,
+      doc: {
+        ...doc,
+        url: mediaUrl.startsWith('http') ? mediaUrl : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://payload-cms-setup-gray.vercel.app'}${mediaUrl}`,
+      },
     });
   } catch (error: any) {
     console.error("[Upload] Error:", error);
+    console.error("[Upload] Stack:", error.stack);
     return NextResponse.json(
       { 
         success: false,
