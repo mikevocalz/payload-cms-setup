@@ -59,11 +59,10 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate a proper Payload JWT token
-      // Use Payload's built-in token generation
+      // Use Payload's built-in token generation without req parameter
       const tokenResult = await payload.login({
         collection: "users",
         data: { id: payloadUser.id },
-        req: request as any,
       });
 
       return NextResponse.json({
